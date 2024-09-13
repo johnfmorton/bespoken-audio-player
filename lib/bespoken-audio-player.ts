@@ -1,6 +1,3 @@
-// Import music-metadata-browser
-import { parseBlob } from 'music-metadata-browser';
-
 export class BespokenAudioPlayer extends HTMLElement {
   // Shadow DOM root
   private shadow: ShadowRoot;
@@ -8,14 +5,11 @@ export class BespokenAudioPlayer extends HTMLElement {
   // Audio element
   private audio: HTMLAudioElement;
 
-  // Playlist array
-  private playlist: string[];
+  // Playlist data including titles
+  private playlistData: { src: string; title?: string }[];
 
   // Current track index
   private currentTrackIndex: number;
-
-  // Cache for track titles
-  private trackTitleCache: Map<string, string>;
 
   // Controls
   private playPauseButton: HTMLButtonElement;
@@ -33,24 +27,23 @@ export class BespokenAudioPlayer extends HTMLElement {
   // Attributes
   private isPlaylistVisible: boolean;
   private isLoopEnabled: boolean;
+  private isOnlyCurrentTrackVisible: boolean;
 
   // Keyboard shortcuts map
   private keyboardShortcuts: { [key: string]: () => void };
 
   constructor() {
     super();
-
-    this.trackTitleCache = new Map<string, string>();
-
     // Attach a shadow DOM tree to this instance
     this.shadow = this.attachShadow({ mode: 'open' });
 
     // Initialize properties
-    this.playlist = [];
+    this.playlistData = [];
     this.currentTrackIndex = 0;
     this.keyboardShortcuts = {};
     this.isPlaylistVisible = false;
     this.isLoopEnabled = false;
+    this.isOnlyCurrentTrackVisible = false;
 
     // Call initialization methods
     this.createAudioElement();
@@ -66,27 +59,30 @@ export class BespokenAudioPlayer extends HTMLElement {
    * attributeChangedCallback will work
    */
   static get observedAttributes() {
-    return ['audio-src', 'playlist-visible', 'loop'];
+    return ['tracks', 'playlist-visible', 'loop', 'only-current-track-visible'];
   }
 
   /**
    * Called when the component is added to the DOM
    */
   connectedCallback() {
-    // Load the initial playlist from the attribute
-    if (this.hasAttribute('audio-src')) {
-      this.parseAudioSrcAttribute();
+    // Load the initial playlist from the 'tracks' attribute
+    if (this.hasAttribute('tracks')) {
+      this.parseTracksAttribute();
+    } else {
+      // No tracks attribute provided
+      console.error('The "tracks" attribute is required and must be a valid JSON array.');
+      this.updateControlsState(false);
     }
+
+    // Check if the only-current-track-visible attribute is present
+    this.isOnlyCurrentTrackVisible = this.hasAttribute('only-current-track-visible');
 
     // Check if the playlist should be visible
-    if (this.hasAttribute('playlist-visible')) {
-      this.isPlaylistVisible = true;
-    }
+    this.isPlaylistVisible = this.hasAttribute('playlist-visible');
 
     // Check if looping is enabled
-    if (this.hasAttribute('loop')) {
-      this.isLoopEnabled = true;
-    }
+    this.isLoopEnabled = this.hasAttribute('loop');
 
     this.render();
   }
@@ -97,29 +93,53 @@ export class BespokenAudioPlayer extends HTMLElement {
    * @param oldValue The previous value.
    * @param newValue The new value.
    */
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-    if (name === 'audio-src' && oldValue !== newValue) {
-      this.parseAudioSrcAttribute();
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+    if (name === 'tracks' && oldValue !== newValue) {
+      this.parseTracksAttribute();
     } else if (name === 'playlist-visible') {
       this.isPlaylistVisible = this.hasAttribute('playlist-visible');
       this.updatePlaylistVisibility();
     } else if (name === 'loop') {
       this.isLoopEnabled = this.hasAttribute('loop');
+    } else if (name === 'only-current-track-visible') {
+      this.isOnlyCurrentTrackVisible = this.hasAttribute('only-current-track-visible');
+      this.updatePlaylistVisibility();
     }
   }
 
   /**
-   * Parses the 'audio-src' attribute and updates the playlist.
+   * Parses the 'tracks' attribute and updates the playlist data.
    */
-  private parseAudioSrcAttribute() {
-    const audioSrc = this.getAttribute('audio-src');
-    if (audioSrc) {
-      // Split the attribute value by commas and trim whitespace
-      const sources = audioSrc
-        .split(',')
-        .map((src) => src.trim())
-        .filter((src) => src.length > 0);
-      this.src = sources.length === 1 ? sources[0] : sources;
+  private parseTracksAttribute() {
+    const tracksAttr = this.getAttribute('tracks');
+    if (tracksAttr) {
+      try {
+        // Parse the JSON string
+        const tracks = JSON.parse(tracksAttr);
+        if (Array.isArray(tracks)) {
+          // Validate and set the playlist data
+          this.playlistData = tracks.filter((track) => typeof track.src === 'string');
+
+          if (this.playlistData.length === 0) {
+            console.error('The "tracks" attribute must contain at least one valid track with a "src" property.');
+            this.updateControlsState(false);
+          } else {
+            this.currentTrackIndex = 0;
+            this.loadCurrentTrack();
+            this.updatePlaylistUI();
+            this.updateControlsState(true);
+          }
+        } else {
+          console.error('Invalid "tracks" attribute format. Expected a JSON array.');
+          this.updateControlsState(false);
+        }
+      } catch (e) {
+        console.error('Failed to parse "tracks" attribute as JSON.', e);
+        this.updateControlsState(false);
+      }
+    } else {
+      console.error('The "tracks" attribute is required and must be a valid JSON array.');
+      this.updateControlsState(false);
     }
   }
 
@@ -230,6 +250,28 @@ export class BespokenAudioPlayer extends HTMLElement {
   }
 
   /**
+   * Updates the enabled/disabled state of controls based on the availability of tracks
+   * @param isEnabled Whether the controls should be enabled
+   */
+  private updateControlsState(isEnabled: boolean) {
+    if (this.playPauseButton) {
+      this.playPauseButton.disabled = !isEnabled;
+    }
+    if (this.nextButton) {
+      this.nextButton.disabled = !isEnabled;
+    }
+    if (this.prevButton) {
+      this.prevButton.disabled = !isEnabled;
+    }
+    if (this.progressBar) {
+      this.progressBar.disabled = !isEnabled;
+    }
+    if (this.playbackRateSelect) {
+      this.playbackRateSelect.disabled = !isEnabled;
+    }
+  }
+
+  /**
    * Attaches event listeners for media events
    */
   private attachEventListeners() {
@@ -330,8 +372,8 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Moves to the next track in the playlist
    */
   private nextTrack() {
-    if (this.playlist.length > 1) {
-      if (this.currentTrackIndex < this.playlist.length - 1) {
+    if (this.playlistData.length > 1) {
+      if (this.currentTrackIndex < this.playlistData.length - 1) {
         this.currentTrackIndex++;
         this.loadCurrentTrack();
       } else if (this.isLoopEnabled) {
@@ -346,12 +388,12 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Moves to the previous track in the playlist
    */
   private prevTrack() {
-    if (this.playlist.length > 1) {
+    if (this.playlistData.length > 1) {
       if (this.currentTrackIndex > 0) {
         this.currentTrackIndex--;
         this.loadCurrentTrack();
       } else if (this.isLoopEnabled) {
-        this.currentTrackIndex = this.playlist.length - 1;
+        this.currentTrackIndex = this.playlistData.length - 1;
         this.loadCurrentTrack();
       }
       // Do not autoplay; wait for user to initiate playback
@@ -370,8 +412,9 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Loads the current track based on currentTrackIndex
    */
   private loadCurrentTrack() {
-    if (this.playlist.length > 0) {
-      this.audio.src = this.playlist[this.currentTrackIndex];
+    if (this.playlistData.length > 0) {
+      const currentTrack = this.playlistData[this.currentTrackIndex];
+      this.audio.src = currentTrack.src;
       this.audio.load();
       // Reset progress bar
       this.progressBar.value = '0';
@@ -382,6 +425,7 @@ export class BespokenAudioPlayer extends HTMLElement {
       this.updatePlaylistUI();
     } else {
       this.audio.removeAttribute('src');
+      this.updateControlsState(false);
     }
   }
 
@@ -389,9 +433,11 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Handles media errors and provides fallback content
    */
   private handleMediaError() {
+    console.error('An error occurred while attempting to load the audio.');
     const errorContainer = document.createElement('div');
     errorContainer.textContent = 'The audio cannot be played at this time.';
     this.shadow.appendChild(errorContainer);
+    this.updateControlsState(false);
   }
 
   /**
@@ -462,8 +508,8 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Handles the end of a track
    */
   private onTrackEnded() {
-    if (this.playlist.length > 1) {
-      if (this.currentTrackIndex < this.playlist.length - 1) {
+    if (this.playlistData.length > 1) {
+      if (this.currentTrackIndex < this.playlistData.length - 1) {
         // Move to the next track
         this.currentTrackIndex++;
         this.loadCurrentTrack();
@@ -492,88 +538,53 @@ export class BespokenAudioPlayer extends HTMLElement {
       this.playlistContainer.removeChild(this.playlistContainer.firstChild);
     }
 
-    if (this.isPlaylistVisible && this.playlist.length > 0) {
-      // Create a list element
-      const list = document.createElement('ul');
-      list.setAttribute('role', 'list');
+    if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
+      if (this.playlistData.length > 0) {
+        // Create a list element
+        const list = document.createElement('ul');
+        list.setAttribute('role', 'list');
 
-      this.playlist.forEach((trackSrc, index) => {
-        const listItem = document.createElement('li');
-        listItem.setAttribute('role', 'listitem');
+        // Determine which tracks to display
+        let tracksToDisplay: { src: string; title?: string }[] = [];
 
-        // Create a button to represent the track
-        const trackButton = document.createElement('button');
-        trackButton.setAttribute('aria-label', `Play track`);
-
-        // Indicate the currently playing track
-        if (index === this.currentTrackIndex) {
-          trackButton.classList.add('current-track');
-          trackButton.setAttribute('aria-current', 'true');
+        if (this.isOnlyCurrentTrackVisible) {
+          // Display only the current track
+          tracksToDisplay = [this.playlistData[this.currentTrackIndex]];
+        } else {
+          // Display the full playlist
+          tracksToDisplay = this.playlistData;
         }
 
-        // Handle click event
-        trackButton.addEventListener('click', () => {
-          this.currentTrackIndex = index;
-          this.loadCurrentTrack();
-          this.playAudio();
+        tracksToDisplay.forEach((track, index) => {
+          const listItem = document.createElement('li');
+          listItem.setAttribute('role', 'listitem');
+
+          // Create a button to represent the track
+          const trackButton = document.createElement('button');
+          const trackTitle = track.title || this.extractFileName(track.src);
+          trackButton.textContent = trackTitle;
+          trackButton.setAttribute('aria-label', `Play ${trackTitle}`);
+
+          // Only add click listener if not only-current-track-visible
+          if (!this.isOnlyCurrentTrackVisible) {
+            trackButton.addEventListener('click', () => {
+              this.currentTrackIndex = index;
+              this.loadCurrentTrack();
+              this.playAudio();
+            });
+          }
+
+          // Indicate the currently playing track
+          if (this.playlistData.indexOf(track) === this.currentTrackIndex) {
+            trackButton.classList.add('current-track');
+            trackButton.setAttribute('aria-current', 'true');
+          }
+
+          listItem.appendChild(trackButton);
+          list.appendChild(listItem);
         });
 
-        // Append the button to the list item
-        listItem.appendChild(trackButton);
-        list.appendChild(listItem);
-
-        // Set the track name (asynchronous operation)
-        this.setTrackButtonTitle(trackButton, trackSrc);
-      });
-
-      this.playlistContainer.appendChild(list);
-    }
-  }
-
-  /**
-   * Updates the visibility of the playlist UI
-   */
-  private updatePlaylistVisibility() {
-    if (this.isPlaylistVisible) {
-      this.playlistContainer.style.display = 'block';
-      this.updatePlaylistUI();
-    } else {
-      this.playlistContainer.style.display = 'none';
-    }
-  }
-
-  /**
-   * Sets the title of a track button, attempting to use embedded metadata
-   * @param trackButton The button element representing the track
-   * @param trackSrc The source URL of the track
-   */
-  private async setTrackButtonTitle(trackButton: HTMLButtonElement, trackSrc: string) {
-    // Check if the title is already cached
-    if (this.trackTitleCache.has(trackSrc)) {
-      const cachedTitle = this.trackTitleCache.get(trackSrc);
-      trackButton.textContent = cachedTitle;
-      trackButton.setAttribute('aria-label', `Play ${cachedTitle}`);
-    } else {
-      try {
-        // Fetch the audio file as a blob
-        const response = await fetch(trackSrc);
-        const blob = await response.blob();
-
-        // Parse metadata from the blob
-        const metadata = await parseBlob(blob);
-
-        const title =
-          metadata.common.title || this.extractFileName(trackSrc);
-
-        this.trackTitleCache.set(trackSrc, title);
-        trackButton.textContent = title;
-        trackButton.setAttribute('aria-label', `Play ${title}`);
-      } catch (error) {
-        // Fallback to file name
-        const title = this.extractFileName(trackSrc);
-        this.trackTitleCache.set(trackSrc, title);
-        trackButton.textContent = title;
-        trackButton.setAttribute('aria-label', `Play ${title}`);
+        this.playlistContainer.appendChild(list);
       }
     }
   }
@@ -581,16 +592,28 @@ export class BespokenAudioPlayer extends HTMLElement {
   /**
    * Extracts the file name from the source URL
    * @param src The source URL of the track
-   * @returns The extracted file name
+   * @returns The extracted file name without extension
    */
   private extractFileName(src: string): string {
     const parts = src.split('/');
     let filename = parts[parts.length - 1];
     // Remove query parameters
     filename = filename.split('?')[0];
-    // Optionally, remove file extension
+    // Remove file extension
     filename = filename.replace(/\.[^/.]+$/, '');
     return filename;
+  }
+
+  /**
+   * Updates the visibility of the playlist UI
+   */
+  private updatePlaylistVisibility() {
+    if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
+      this.playlistContainer.style.display = 'block';
+      this.updatePlaylistUI();
+    } else {
+      this.playlistContainer.style.display = 'none';
+    }
   }
 
   /**
@@ -646,31 +669,43 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.shadow.appendChild(style);
 
     // Load the current track
-    this.loadCurrentTrack();
+    if (this.playlistData.length > 0) {
+      this.loadCurrentTrack();
+    } else {
+      this.updateControlsState(false);
+    }
 
     // Update playlist visibility
     this.updatePlaylistVisibility();
   }
 
   /**
-   * Allows setting the playlist via an attribute or property
+   * Allows setting the playlist via the 'tracks' attribute or property
    */
-  set src(value: string | string[]) {
+  set tracks(value: { src: string; title?: string }[]) {
     if (Array.isArray(value)) {
-      this.playlist = value;
+      this.playlistData = value.filter((track) => typeof track.src === 'string');
+
+      if (this.playlistData.length === 0) {
+        console.error('The "tracks" property must contain at least one valid track with a "src" property.');
+        this.updateControlsState(false);
+      } else {
+        this.currentTrackIndex = 0;
+        this.loadCurrentTrack();
+        this.updatePlaylistUI();
+        this.updateControlsState(true);
+      }
     } else {
-      this.playlist = [value];
+      console.error('The "tracks" property must be an array of track objects.');
+      this.updateControlsState(false);
     }
-    this.currentTrackIndex = 0;
-    this.loadCurrentTrack();
-    this.updatePlaylistUI();
   }
 
   /**
-   * Gets the current playlist
+   * Gets the current playlist data
    */
-  get src(): string[] {
-    return this.playlist;
+  get tracks(): { src: string; title?: string }[] {
+    return this.playlistData;
   }
 }
 
@@ -678,7 +713,6 @@ export class BespokenAudioPlayer extends HTMLElement {
 if (!customElements.get('bespoken-audio-player')) {
   customElements.define('bespoken-audio-player', BespokenAudioPlayer);
 }
-
 export function initBespokenAudioPlayer() {
   if (!customElements.get('bespoken-audio-player')) {
     customElements.define('bespoken-audio-player', BespokenAudioPlayer);
