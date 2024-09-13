@@ -7,6 +7,29 @@
   <title>Module Demo Page</title>
   <!-- Script tag for demo page purposes in demo-page-assets/demo.ts  -->
   <script type="module" src="demo-page-assets/demo.ts"></script>
+
+  <style>
+    bespoken-audio-player.purple-theme {
+      --primary-color: #673ab7;
+      --button-background: #e0e0e0;
+      --button-color: #fff;
+    }
+
+    /* Style the play/pause button */
+    bespoken-audio-player::part(play-button).purple-theme {
+      background-color: #673ab7;
+      color: #fff;
+      border-radius: 50%;
+    }
+
+    /* Style the next and previous buttons */
+    bespoken-audio-player::part(next-button).purple-theme,
+    bespoken-audio-player::part(prev-button).purple-theme {
+      background-color: #673ab7;
+      color: #fff;
+      border-radius: 50%;
+    }
+  </style>
 </head>
 
 <body>
@@ -33,14 +56,24 @@
 
 
 <bespoken-audio-player
-        class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
+        class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
     playlist-visible
     tracks='[
       {"src": "demo-page-assets/fish-and-chips.mp3", "title": "Introduction"},
       {"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"},
       {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
     ]'
-  ></bespoken-audio-player>
+  >
+<!-- Custom Play Icon -->
+<svg slot="play-icon" width="24" height="24" viewBox="0 0 24 24">
+  <path d="M8 5v14l11-7z"></path>
+</svg>
+<!-- Custom Pause Icon -->
+<svg slot="pause-icon" width="24" height="24" viewBox="0 0 24 24">
+  <path d="M6 19h4V5H6zm8-14v14h4V5z"></path>
+</svg>
+
+</bespoken-audio-player>
 
 
   <p>

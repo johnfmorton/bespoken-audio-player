@@ -18,7 +18,7 @@ export class BespokenAudioPlayer extends HTMLElement {
   private playbackRateSelect: HTMLSelectElement;
 
   // Progress bar elements
-  private progressTimeContainer: HTMLElement; // New container for progress bar and time display
+  private progressTimeContainer: HTMLElement; // Container for progress bar and time display
   private progressBar: HTMLInputElement;
 
   // Time display element
@@ -244,7 +244,28 @@ export class BespokenAudioPlayer extends HTMLElement {
 
     // Play/Pause toggle button
     this.playPauseButton = document.createElement('button');
-    this.playPauseButton.textContent = 'Play';
+    this.playPauseButton.setAttribute('part', 'play-button');
+    this.playPauseButton.setAttribute('id', 'playPauseButton');
+
+    // Use slots for play and pause icons
+    const playIconSlot = document.createElement('slot');
+    playIconSlot.name = 'play-icon';
+
+    const pauseIconSlot = document.createElement('slot');
+    pauseIconSlot.name = 'pause-icon';
+    pauseIconSlot.style.display = 'none'; // Initially hidden
+
+    // Default content for play and pause icons
+    if (!this.querySelector('[slot="play-icon"]')) {
+      playIconSlot.textContent = 'Play';
+    }
+    if (!this.querySelector('[slot="pause-icon"]')) {
+      pauseIconSlot.textContent = 'Pause';
+    }
+
+    this.playPauseButton.appendChild(playIconSlot);
+    this.playPauseButton.appendChild(pauseIconSlot);
+
     this.playPauseButton.setAttribute('aria-label', 'Play');
     this.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     controlsContainer.appendChild(this.playPauseButton);
@@ -253,6 +274,7 @@ export class BespokenAudioPlayer extends HTMLElement {
     if (this.playlistData.length > 1) {
       // Previous track button
       this.prevButton = document.createElement('button');
+      this.prevButton.setAttribute('part', 'prev-button');
       this.prevButton.textContent = 'Previous';
       this.prevButton.setAttribute('aria-label', 'Previous Track');
       this.prevButton.addEventListener('click', () => this.prevTrack());
@@ -260,6 +282,7 @@ export class BespokenAudioPlayer extends HTMLElement {
 
       // Next track button
       this.nextButton = document.createElement('button');
+      this.nextButton.setAttribute('part', 'next-button');
       this.nextButton.textContent = 'Next';
       this.nextButton.setAttribute('aria-label', 'Next Track');
       this.nextButton.addEventListener('click', () => this.nextTrack());
@@ -352,6 +375,9 @@ export class BespokenAudioPlayer extends HTMLElement {
     if (this.playbackRateSelect) {
       this.playbackRateSelect.disabled = !isEnabled;
     }
+    if (this.timeDisplay) {
+      this.timeDisplay.textContent = isEnabled ? '0:00/0:00' : '';
+    }
   }
 
   /**
@@ -362,10 +388,20 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.audio.addEventListener('error', () => this.handleMediaError());
 
     // Update progress bar as audio plays
-    this.audio.addEventListener('timeupdate', () => this.updateProgressBar());
+    this.audio.addEventListener('timeupdate', () => {
+      this.updateProgressBar();
+      this.updateTimeDisplay();
+    });
 
     // Update duration when metadata is loaded
-    this.audio.addEventListener('loadedmetadata', () => this.updateProgressBar());
+    this.audio.addEventListener('loadedmetadata', () => {
+      this.updateProgressBar();
+      this.updateTimeDisplay();
+    });
+
+    this.audio.addEventListener('durationchange', () => {
+      this.updateTimeDisplay();
+    });
 
     // Update play/pause button when playback state changes
     this.audio.addEventListener('play', () => this.updatePlayPauseButton());
@@ -439,15 +475,20 @@ export class BespokenAudioPlayer extends HTMLElement {
   }
 
   /**
-   * Updates the play/pause button text and aria-label based on playback state
+   * Updates the play/pause button based on playback state
    */
   private updatePlayPauseButton() {
+    const playIconSlot = this.playPauseButton.querySelector('slot[name="play-icon"]') as HTMLSlotElement;
+    const pauseIconSlot = this.playPauseButton.querySelector('slot[name="pause-icon"]') as HTMLSlotElement;
+
     if (this.audio.paused) {
-      this.playPauseButton.textContent = 'Play';
       this.playPauseButton.setAttribute('aria-label', 'Play');
+      playIconSlot.style.display = '';
+      pauseIconSlot.style.display = 'none';
     } else {
-      this.playPauseButton.textContent = 'Pause';
       this.playPauseButton.setAttribute('aria-label', 'Pause');
+      playIconSlot.style.display = 'none';
+      pauseIconSlot.style.display = '';
     }
   }
 
@@ -506,6 +547,8 @@ export class BespokenAudioPlayer extends HTMLElement {
       this.updatePlayPauseButton();
       // Update playlist UI to indicate the current track
       this.updatePlaylistUI();
+      // Reset time display
+      this.updateTimeDisplay();
     } else {
       this.audio.removeAttribute('src');
       this.updateControlsState(false);
@@ -538,6 +581,38 @@ export class BespokenAudioPlayer extends HTMLElement {
       this.progressBar.value = '0';
       this.progressBar.setAttribute('aria-valuenow', '0');
       this.progressBar.setAttribute('aria-valuetext', '0% played');
+    }
+  }
+
+  /**
+   * Updates the time display
+   */
+  private updateTimeDisplay() {
+    const currentTime = this.audio.currentTime || 0;
+    const duration = this.audio.duration || 0;
+    const formattedCurrentTime = this.formatTime(currentTime);
+    const formattedDuration = this.formatTime(duration);
+    this.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
+  }
+
+  /**
+   * Formats a time value in seconds to HH:MM:SS or MM:SS
+   * @param time Time in seconds
+   * @returns Formatted time string
+   */
+  private formatTime(time: number): string {
+    const totalSeconds = Math.floor(time);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+    const seconds = totalSeconds - hours * 3600 - minutes * 60;
+
+    const secondsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
+    const minutesStr = minutes < 10 && hours > 0 ? `0${minutes}` : `${minutes}`;
+
+    if (hours > 0) {
+      return `${hours}:${minutesStr}:${secondsStr}`;
+    } else {
+      return `${minutes}:${secondsStr}`;
     }
   }
 
@@ -707,6 +782,9 @@ export class BespokenAudioPlayer extends HTMLElement {
     const style = document.createElement('style');
     style.textContent = `
       /* Styles for the audio player */
+      :host {
+        --primary-color: blue;
+      }
       .playlist-container {
         margin-bottom: 10px;
       }
@@ -721,7 +799,7 @@ export class BespokenAudioPlayer extends HTMLElement {
       .playlist-container button {
         background: none;
         border: none;
-        color: blue;
+        color: var(--primary-color);
         text-decoration: underline;
         cursor: pointer;
       }
@@ -754,6 +832,10 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
       button {
         padding: 5px 10px;
+        background-color: var(--button-background, #fff);
+        color: var(--button-color, var(--primary-color));
+        border: 1px solid var(--primary-color);
+        cursor: pointer;
       }
       select {
         padding: 5px;
