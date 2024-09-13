@@ -23,7 +23,7 @@
     .customized bespoken-audio-player::part(play-button) {
       background-color: #673ab7;
       color: #fff;
-      border-radius: 50%;
+      border-radius: 10%;
     }
 
     /* Style the previous and next buttons */
@@ -31,12 +31,13 @@
   .customized bespoken-audio-player::part(next-button) {
     background-color: #673ab7;
     color: #fff;
-    border-radius: 50%;
+    border-radius: 10%;
   }
 
-  /* Style the time display */
+  /*
+  TODO: style the time display */
   .customized bespoken-audio-player::part(time-display) {
-    color: #673ab7;
+    color: #c41d7e;
     font-weight: bold;
   }
 
@@ -47,7 +48,7 @@
 
 <body>
 
-  <div class="bg-slate-50 py-24 sm:py-32 min-h-screen">
+  <div class="bg-slate-50 py-16 min-h-screen">
     <div class="mx-auto max-w-screen-lg p-6 lg:p-8 bg-gradient-to-br from-white to-slate-200 rounded shadow-2xl">
       <div class="mx-auto lg:mx-0">
         <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">Bespoken Audio Player Demo Page</h1>

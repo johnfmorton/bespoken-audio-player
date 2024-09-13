@@ -837,7 +837,7 @@ export class BespokenAudioPlayer extends HTMLElement {
     style.textContent = `
       /* Styles for the audio player */
       :host {
-        --primary-color: blue;
+        --primary-color: #334155;
         --progress-bar-background: #ccc;
         --progress-bar-fill: var(--primary-color);
         --progress-bar-thumb: var(--primary-color);
@@ -889,10 +889,11 @@ export class BespokenAudioPlayer extends HTMLElement {
         align-items: center;
       }
       button {
-        padding: 5px 10px;
+        padding: 6px 10px;
         background-color: var(--button-background, #fff);
         color: var(--button-color, var(--primary-color));
-        border: 1px solid var(--primary-color);
+        border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
+        border-radius: 2px;
         cursor: pointer;
       }
       select {
@@ -910,77 +911,77 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
 
       /* Progress Bar Styles */
-input[type="range"] {
-  -webkit-appearance: none;
-  width: 100%;
-  background-color: transparent;
-  cursor: pointer;
-}
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        background-color: transparent;
+        cursor: pointer;
+      }
 
-/* Track - Normal State */
-input[type="range"]::-webkit-slider-runnable-track {
-  height: 8px;
-  border-radius: 5px;
-  background: linear-gradient(
-    to right,
-    var(--progress-bar-fill) 0%,
-    var(--progress-bar-fill) var(--progress),
-    var(--progress-bar-background) var(--progress),
-    var(--progress-bar-background) 100%
-  );
-}
+      /* Track - Normal State */
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 8px;
+        border-radius: 5px;
+        background: linear-gradient(
+          to right,
+          var(--progress-bar-fill) 0%,
+          var(--progress-bar-fill) var(--progress),
+          var(--progress-bar-background) var(--progress),
+          var(--progress-bar-background) 100%
+        );
+      }
 
-/* Track - Hover State */
-input[type="range"]:hover::-webkit-slider-runnable-track {
-  background: linear-gradient(
-    to right,
-    var(--progress-bar-fill-hover) 0%,
-    var(--progress-bar-fill-hover) var(--progress),
-    var(--progress-bar-background) var(--progress),
-    var(--progress-bar-background) 100%
-  );
-}
+      /* Track - Hover State */
+      input[type="range"]:hover::-webkit-slider-runnable-track {
+        background: linear-gradient(
+          to right,
+          var(--progress-bar-fill-hover) 0%,
+          var(--progress-bar-fill-hover) var(--progress),
+          var(--progress-bar-background) var(--progress),
+          var(--progress-bar-background) 100%
+        );
+      }
 
-/* Thumb */
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 15px;
-  height: 15px;
-  background-color: var(--progress-bar-thumb);
-  border-radius: 50%;
-  margin-top: -4px; /* Adjust for alignment */
-}
+      /* Thumb */
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 15px;
+        height: 15px;
+        background-color: var(--progress-bar-thumb);
+        border-radius: 50%;
+        margin-top: -4px; /* Adjust for alignment */
+      }
 
-/* Mozilla Browsers */
-/* Track - Normal State */
-input[type="range"]::-moz-range-track {
-  height: 8px;
-  background-color: var(--progress-bar-background);
-  border-radius: 5px;
-}
+      /* Mozilla Browsers */
+      /* Track - Normal State */
+      input[type="range"]::-moz-range-track {
+        height: 8px;
+        background-color: var(--progress-bar-background);
+        border-radius: 5px;
+      }
 
-/* Using CSS color function (requires browser support) */
-input[type="range"]::-webkit-slider-runnable-track {
-  /* Normal State */
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) 0%,
-    color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) var(--progress),
-    var(--progress-bar-background) var(--progress),
-    var(--progress-bar-background) 100%
-  );
-}
+      /* Using CSS color function (requires browser support) */
+      input[type="range"]::-webkit-slider-runnable-track {
+        /* Normal State */
+        background: linear-gradient(
+          to right,
+          color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) 0%,
+          color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) var(--progress),
+          var(--progress-bar-background) var(--progress),
+          var(--progress-bar-background) 100%
+        );
+      }
 
-input[type="range"]:hover::-webkit-slider-runnable-track {
-  /* Hover State */
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) 0%,
-    color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) var(--progress),
-    var(--progress-bar-background) var(--progress),
-    var(--progress-bar-background) 100%
-  );
-}
+      input[type="range"]:hover::-webkit-slider-runnable-track {
+        /* Hover State */
+        background: linear-gradient(
+          to right,
+          color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) 0%,
+          color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) var(--progress),
+          var(--progress-bar-background) var(--progress),
+          var(--progress-bar-background) 100%
+        );
+      }
     `;
     this.shadow.appendChild(style);
 
