@@ -1,5 +1,5 @@
-// Import jsmediatags
-import jsmediatags from 'jsmediatags';
+// Import music-metadata-browser
+import { parseBlob } from 'music-metadata-browser';
 
 export class BespokenAudioPlayer extends HTMLElement {
   // Shadow DOM root
@@ -501,18 +501,9 @@ export class BespokenAudioPlayer extends HTMLElement {
         const listItem = document.createElement('li');
         listItem.setAttribute('role', 'listitem');
 
-        // Extract the track name from the source URL
-        const trackName = this.extractTrackName(trackSrc);
-
         // Create a button to represent the track
         const trackButton = document.createElement('button');
-        trackButton.textContent = trackName;
-        trackButton.setAttribute('aria-label', `Play ${trackName}`);
-        trackButton.addEventListener('click', () => {
-          this.currentTrackIndex = index;
-          this.loadCurrentTrack();
-          this.playAudio();
-        });
+        trackButton.setAttribute('aria-label', `Play track`);
 
         // Indicate the currently playing track
         if (index === this.currentTrackIndex) {
@@ -520,8 +511,19 @@ export class BespokenAudioPlayer extends HTMLElement {
           trackButton.setAttribute('aria-current', 'true');
         }
 
+        // Handle click event
+        trackButton.addEventListener('click', () => {
+          this.currentTrackIndex = index;
+          this.loadCurrentTrack();
+          this.playAudio();
+        });
+
+        // Append the button to the list item
         listItem.appendChild(trackButton);
         list.appendChild(listItem);
+
+        // Set the track name (asynchronous operation)
+        this.setTrackButtonTitle(trackButton, trackSrc);
       });
 
       this.playlistContainer.appendChild(list);
@@ -541,16 +543,54 @@ export class BespokenAudioPlayer extends HTMLElement {
   }
 
   /**
-   * Extracts a track name from the source URL
-   * @param src The source URL of the track
-   * @returns The extracted track name
+   * Sets the title of a track button, attempting to use embedded metadata
+   * @param trackButton The button element representing the track
+   * @param trackSrc The source URL of the track
    */
-  private extractTrackName(src: string): string {
-    // Simple extraction of the filename from the URL
+  private async setTrackButtonTitle(trackButton: HTMLButtonElement, trackSrc: string) {
+    // Check if the title is already cached
+    if (this.trackTitleCache.has(trackSrc)) {
+      const cachedTitle = this.trackTitleCache.get(trackSrc);
+      trackButton.textContent = cachedTitle;
+      trackButton.setAttribute('aria-label', `Play ${cachedTitle}`);
+    } else {
+      try {
+        // Fetch the audio file as a blob
+        const response = await fetch(trackSrc);
+        const blob = await response.blob();
+
+        // Parse metadata from the blob
+        const metadata = await parseBlob(blob);
+
+        const title =
+          metadata.common.title || this.extractFileName(trackSrc);
+
+        this.trackTitleCache.set(trackSrc, title);
+        trackButton.textContent = title;
+        trackButton.setAttribute('aria-label', `Play ${title}`);
+      } catch (error) {
+        // Fallback to file name
+        const title = this.extractFileName(trackSrc);
+        this.trackTitleCache.set(trackSrc, title);
+        trackButton.textContent = title;
+        trackButton.setAttribute('aria-label', `Play ${title}`);
+      }
+    }
+  }
+
+  /**
+   * Extracts the file name from the source URL
+   * @param src The source URL of the track
+   * @returns The extracted file name
+   */
+  private extractFileName(src: string): string {
     const parts = src.split('/');
-    const filename = parts[parts.length - 1];
-    // Remove any query parameters
-    return filename.split('?')[0];
+    let filename = parts[parts.length - 1];
+    // Remove query parameters
+    filename = filename.split('?')[0];
+    // Optionally, remove file extension
+    filename = filename.replace(/\.[^/.]+$/, '');
+    return filename;
   }
 
   /**

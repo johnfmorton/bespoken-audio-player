@@ -48,6 +48,6 @@
         "vite-plugin-banner": "^0.7.0"
     },
     "dependencies": {
-        "jsmediatags": "^3.9.7"
+        "music-metadata-browser": "^2.5.11"
     }
 }
