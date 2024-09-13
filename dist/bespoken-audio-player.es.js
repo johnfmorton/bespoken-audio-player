@@ -1,10 +1,10 @@
 /**
- * name: vite-module-builder-w-ghpages-npm-template
+ * name: bespoken-audio-player
  * version: v1.0.0
  * description: This is a templare repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
- * repository: https://github.com/johnfmorton/vite-module-builder-w-ghpages-npm-template
- * build date: 2024-09-13T13:03:19.585Z 
+ * repository: https://github.com/johnfmorton/bespoken-audio-player
+ * build date: 2024-09-13T13:11:15.108Z 
  */
 function init(message) {
   console.log(message);
@@ -13,9 +13,9 @@ function init(message) {
     messageOutputElement.innerHTML = message;
   }
 }
-const viteModuleBuilderWGhpagesNpmTemplate = {
+const bespokenAudioPlayer = {
   init
 };
 export {
-  viteModuleBuilderWGhpagesNpmTemplate as default
+  bespokenAudioPlayer as default
 };
