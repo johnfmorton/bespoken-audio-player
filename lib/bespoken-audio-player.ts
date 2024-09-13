@@ -13,8 +13,8 @@ export class BespokenAudioPlayer extends HTMLElement {
 
   // Controls
   private playPauseButton: HTMLButtonElement;
-  private nextButton: HTMLButtonElement;
-  private prevButton: HTMLButtonElement;
+  private nextButton?: HTMLButtonElement;
+  private prevButton?: HTMLButtonElement;
   private playbackRateSelect: HTMLSelectElement;
 
   // Progress bar elements
@@ -128,6 +128,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             this.loadCurrentTrack();
             this.updatePlaylistUI();
             this.updateControlsState(true);
+            this.updateControlsVisibility();
           }
         } else {
           console.error('Invalid "tracks" attribute format. Expected a JSON array.');
@@ -214,19 +215,22 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     controlsContainer.appendChild(this.playPauseButton);
 
-    // Previous track button
-    this.prevButton = document.createElement('button');
-    this.prevButton.textContent = 'Previous';
-    this.prevButton.setAttribute('aria-label', 'Previous Track');
-    this.prevButton.addEventListener('click', () => this.prevTrack());
-    controlsContainer.appendChild(this.prevButton);
+    // Previous and Next buttons are only created if there is more than one track
+    if (this.playlistData.length > 1) {
+      // Previous track button
+      this.prevButton = document.createElement('button');
+      this.prevButton.textContent = 'Previous';
+      this.prevButton.setAttribute('aria-label', 'Previous Track');
+      this.prevButton.addEventListener('click', () => this.prevTrack());
+      controlsContainer.appendChild(this.prevButton);
 
-    // Next track button
-    this.nextButton = document.createElement('button');
-    this.nextButton.textContent = 'Next';
-    this.nextButton.setAttribute('aria-label', 'Next Track');
-    this.nextButton.addEventListener('click', () => this.nextTrack());
-    controlsContainer.appendChild(this.nextButton);
+      // Next track button
+      this.nextButton = document.createElement('button');
+      this.nextButton.textContent = 'Next';
+      this.nextButton.setAttribute('aria-label', 'Next Track');
+      this.nextButton.addEventListener('click', () => this.nextTrack());
+      controlsContainer.appendChild(this.nextButton);
+    }
 
     // Playback rate select dropdown
     this.playbackRateSelect = document.createElement('select');
@@ -247,6 +251,51 @@ export class BespokenAudioPlayer extends HTMLElement {
 
     // Append controls to shadow DOM
     this.shadow.appendChild(controlsContainer);
+  }
+
+  /**
+   * Updates the visibility of the Prev and Next buttons based on the number of tracks
+   */
+  private updateControlsVisibility() {
+    if (this.playlistData.length > 1) {
+      // Ensure Prev and Next buttons exist
+      if (!this.prevButton && !this.nextButton) {
+        // Re-create controls to include Prev and Next buttons
+        this.removeControls();
+        this.createControls();
+        this.updateControlsState(true);
+      } else {
+        // Make sure the buttons are visible
+        if (this.prevButton) {
+          this.prevButton.style.display = '';
+        }
+        if (this.nextButton) {
+          this.nextButton.style.display = '';
+        }
+      }
+    } else {
+      // Hide Prev and Next buttons if they exist
+      if (this.prevButton) {
+        this.prevButton.style.display = 'none';
+      }
+      if (this.nextButton) {
+        this.nextButton.style.display = 'none';
+      }
+    }
+  }
+
+  /**
+   * Removes the existing controls from the DOM
+   */
+  private removeControls() {
+    const controls = this.shadow.querySelector('div[role="group"]');
+    if (controls) {
+      this.shadow.removeChild(controls);
+    }
+    this.playPauseButton = null;
+    this.prevButton = null;
+    this.nextButton = null;
+    this.playbackRateSelect = null;
   }
 
   /**
@@ -675,6 +724,9 @@ export class BespokenAudioPlayer extends HTMLElement {
       this.updateControlsState(false);
     }
 
+    // Update controls visibility
+    this.updateControlsVisibility();
+
     // Update playlist visibility
     this.updatePlaylistVisibility();
   }
@@ -694,6 +746,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.loadCurrentTrack();
         this.updatePlaylistUI();
         this.updateControlsState(true);
+        this.updateControlsVisibility();
       }
     } else {
       console.error('The "tracks" property must be an array of track objects.');
@@ -713,6 +766,8 @@ export class BespokenAudioPlayer extends HTMLElement {
 if (!customElements.get('bespoken-audio-player')) {
   customElements.define('bespoken-audio-player', BespokenAudioPlayer);
 }
+
+
 export function initBespokenAudioPlayer() {
   if (!customElements.get('bespoken-audio-player')) {
     customElements.define('bespoken-audio-player', BespokenAudioPlayer);
