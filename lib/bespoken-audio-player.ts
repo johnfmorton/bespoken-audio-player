@@ -18,8 +18,11 @@ export class BespokenAudioPlayer extends HTMLElement {
   private playbackRateSelect: HTMLSelectElement;
 
   // Progress bar elements
-  private progressContainer: HTMLElement;
+  private progressTimeContainer: HTMLElement; // New container for progress bar and time display
   private progressBar: HTMLInputElement;
+
+  // Time display element
+  private timeDisplay: HTMLElement;
 
   // Playlist UI elements
   private playlistContainer: HTMLElement;
@@ -48,7 +51,7 @@ export class BespokenAudioPlayer extends HTMLElement {
     // Call initialization methods
     this.createAudioElement();
     this.createPlaylist(); // Create playlist UI
-    this.createProgressBar(); // Create progress bar
+    this.createProgressAndTimeContainer(); // Create container for progress bar and time display
     this.createControls();
     this.attachEventListeners();
     this.setupKeyboardShortcuts();
@@ -164,13 +167,27 @@ export class BespokenAudioPlayer extends HTMLElement {
   }
 
   /**
-   * Creates the progress bar and appends it to the shadow DOM
+   * Creates the container for progress bar and time display
+   */
+  private createProgressAndTimeContainer() {
+    // Create a container for progress bar and time display
+    this.progressTimeContainer = document.createElement('div');
+    this.progressTimeContainer.setAttribute('class', 'progress-time-container');
+
+    // Create the progress bar
+    this.createProgressBar();
+
+    // Create the time display
+    this.createTimeDisplay();
+
+    // Append the container to the shadow DOM
+    this.shadow.appendChild(this.progressTimeContainer);
+  }
+
+  /**
+   * Creates the progress bar and appends it to the progress-time container
    */
   private createProgressBar() {
-    // Create a container for styling purposes
-    this.progressContainer = document.createElement('div');
-    this.progressContainer.setAttribute('class', 'progress-container');
-
     // Create the progress bar (range input)
     this.progressBar = document.createElement('input');
     this.progressBar.type = 'range';
@@ -192,11 +209,28 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.progressBar.addEventListener('change', () => this.onSeek());
     this.progressBar.addEventListener('keydown', (event) => this.onSeekKeyDown(event));
 
-    // Append the progress bar to the container
-    this.progressContainer.appendChild(this.progressBar);
+    // Create a container for the progress bar to apply styles
+    const progressContainer = document.createElement('div');
+    progressContainer.setAttribute('class', 'progress-container');
 
-    // Append the container to the shadow DOM
-    this.shadow.appendChild(this.progressContainer);
+    // Append the progress bar to its container
+    progressContainer.appendChild(this.progressBar);
+
+    // Append the progress container to the progress-time container
+    this.progressTimeContainer.appendChild(progressContainer);
+  }
+
+  /**
+   * Creates the time display element and appends it to the progress-time container
+   */
+  private createTimeDisplay() {
+    this.timeDisplay = document.createElement('div');
+    this.timeDisplay.setAttribute('class', 'time-display');
+    this.timeDisplay.setAttribute('aria-live', 'off');
+    this.timeDisplay.textContent = '0:00/0:00';
+
+    // Append the time display to the progress-time container
+    this.progressTimeContainer.appendChild(this.timeDisplay);
   }
 
   /**
@@ -696,8 +730,21 @@ export class BespokenAudioPlayer extends HTMLElement {
         text-decoration: none;
         cursor: default;
       }
+      .progress-time-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
       .progress-container {
+        flex-grow: 1;
         width: 100%;
+      }
+      .progress-container input[type="range"] {
+        width: 100%;
+      }
+      .time-display {
+        margin-left: 10px;
+        flex-shrink: 0;
       }
       div[role="group"] {
         display: flex;
@@ -711,8 +758,15 @@ export class BespokenAudioPlayer extends HTMLElement {
       select {
         padding: 5px;
       }
-      input[type="range"] {
-        width: 100%;
+      @media (max-width: 600px) {
+        .progress-time-container {
+          flex-direction: column;
+          align-items: center;
+        }
+        .time-display {
+          margin-left: 0;
+          margin-top: 5px;
+        }
       }
     `;
     this.shadow.appendChild(style);
