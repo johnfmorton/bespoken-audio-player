@@ -909,68 +909,77 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
 
       /* Progress Bar Styles */
-      input[type="range"] {
-        -webkit-appearance: none;
-        width: 100%;
-        background-color: transparent;
-        cursor: pointer;
-      }
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  background-color: transparent;
+  cursor: pointer;
+}
 
-      /* Track */
-      input[type="range"]::-webkit-slider-runnable-track {
-        height: 5px;
-        background-color: var(--progress-bar-background);
-        border-radius: 5px;
-      }
-      input[type="range"]::-moz-range-track {
-        height: 5px;
-        background-color: var(--progress-bar-background);
-        border-radius: 5px;
-      }
+/* Track - Normal State */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 5px;
+  background: linear-gradient(
+    to right,
+    var(--progress-bar-fill) 0%,
+    var(--progress-bar-fill) var(--progress),
+    var(--progress-bar-background) var(--progress),
+    var(--progress-bar-background) 100%
+  );
+}
 
-      /* Thumb */
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 15px;
-        height: 15px;
-        background-color: var(--progress-bar-thumb);
-        border-radius: 50%;
-        margin-top: -5px; /* Adjust for alignment */
-      }
-      input[type="range"]::-moz-range-thumb {
-        width: 15px;
-        height: 15px;
-        background-color: var(--progress-bar-thumb);
-        border-radius: 50%;
-        border: none;
-      }
+/* Track - Hover State */
+input[type="range"]:hover::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    var(--progress-bar-fill-hover) 0%,
+    var(--progress-bar-fill-hover) var(--progress),
+    var(--progress-bar-background) var(--progress),
+    var(--progress-bar-background) 100%
+  );
+}
 
-      /* Filled Track (for Firefox) */
-      input[type="range"]::-moz-range-progress {
-        background-color: var(--progress-bar-fill);
-        height: 5px;
-        border-radius: 5px;
-      }
+/* Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  background-color: var(--progress-bar-thumb);
+  border-radius: 50%;
+  margin-top: -4px; /* Adjust for alignment */
+}
 
-      /* WebKit Browsers */
-      input[type="range"]::-webkit-slider-runnable-track {
-        background: linear-gradient(
-          to right,
-          var(--progress-bar-fill) 0%,
-          var(--progress-bar-fill) var(--progress),
-          var(--progress-bar-background) var(--progress),
-          var(--progress-bar-background) 100%
-        );
-      }
+/* Mozilla Browsers */
+/* Track - Normal State */
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background-color: var(--progress-bar-background);
+  border-radius: 5px;
+}
 
-      /* Mozilla Browsers */
-      input[type="range"]::-moz-range-track {
-        background: var(--progress-bar-background);
-      }
-      input[type="range"]::-moz-range-progress {
-        background-color: var(--progress-bar-fill);
-      }
+/* Using CSS color function (requires browser support) */
+input[type="range"]::-webkit-slider-runnable-track {
+  /* Normal State */
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) 0%,
+    color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) var(--progress),
+    var(--progress-bar-background) var(--progress),
+    var(--progress-bar-background) 100%
+  );
+}
 
+input[type="range"]:hover::-webkit-slider-runnable-track {
+  /* Hover State */
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) 0%,
+    color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) var(--progress),
+    var(--progress-bar-background) var(--progress),
+    var(--progress-bar-background) 100%
+  );
+}
     `;
     this.shadow.appendChild(style);
 
