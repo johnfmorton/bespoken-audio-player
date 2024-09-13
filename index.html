@@ -10,9 +10,13 @@
 
   <style>
     bespoken-audio-player.purple-theme {
-      --primary-color: #673ab7;
-      --button-background: #e0e0e0;
+      --button-background: #237782;
       --button-color: #fff;
+      --primary-color: #673ab7;
+      --progress-bar-background: #e0e0e0;
+      --progress-bar-fill: #ff5722;
+      --progress-bar-thumb: #1acf74;
+
     }
 
     /* Style the play/pause button */
@@ -65,12 +69,12 @@
     ]'
   >
 <!-- Custom Play Icon -->
-<svg slot="play-icon" width="24" height="24" viewBox="0 0 24 24">
-  <path d="M8 5v14l11-7z"></path>
+<svg slot="play-icon" width="15" height="15" viewBox="0 0 24 24">
+  <path d="M8 5v14l11-7z" fill="currentColor"></path>
 </svg>
 <!-- Custom Pause Icon -->
-<svg slot="pause-icon" width="24" height="24" viewBox="0 0 24 24">
-  <path d="M6 19h4V5H6zm8-14v14h4V5z"></path>
+<svg slot="pause-icon" width="15" height="15" viewBox="0 0 24 24">
+  <path d="M6 19h4V5H6zm8-14v14h4V5z" fill="currentColor"></path>
 </svg>
 
 </bespoken-audio-player>

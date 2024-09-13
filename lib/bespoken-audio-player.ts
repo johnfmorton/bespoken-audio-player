@@ -197,6 +197,8 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.progressBar.step = '0.1'; // Small steps for smooth seeking
 
     // Accessibility attributes
+    // Add part attribute to the progress bar
+    this.progressBar.setAttribute('part', 'progress-bar');
     this.progressBar.setAttribute('role', 'slider');
     this.progressBar.setAttribute('aria-label', 'Seek Slider');
     this.progressBar.setAttribute('aria-valuemin', '0');
@@ -224,6 +226,9 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Creates the time display element and appends it to the progress-time container
    */
   private createTimeDisplay() {
+    this.timeDisplay = document.createElement('div');
+    this.timeDisplay.setAttribute('class', 'time-display');
+    this.timeDisplay.setAttribute('part', 'time-display');
     this.timeDisplay = document.createElement('div');
     this.timeDisplay.setAttribute('class', 'time-display');
     this.timeDisplay.setAttribute('aria-live', 'off');
@@ -571,17 +576,23 @@ export class BespokenAudioPlayer extends HTMLElement {
    */
   private updateProgressBar() {
     if (this.audio.duration > 0) {
-      const value = (this.audio.currentTime / this.audio.duration) * 100;
-      this.progressBar.value = value.toString();
-      this.progressBar.setAttribute('aria-valuenow', value.toFixed(2));
-      const percentPlayed = value.toFixed(1) + '% played';
-      this.progressBar.setAttribute('aria-valuetext', percentPlayed);
-    } else {
-      // Audio duration is not available yet
-      this.progressBar.value = '0';
-      this.progressBar.setAttribute('aria-valuenow', '0');
-      this.progressBar.setAttribute('aria-valuetext', '0% played');
-    }
+    const value = (this.audio.currentTime / this.audio.duration) * 100;
+    this.progressBar.value = value.toString();
+    this.progressBar.setAttribute('aria-valuenow', value.toFixed(2));
+    const percentPlayed = value.toFixed(1) + '% played';
+    this.progressBar.setAttribute('aria-valuetext', percentPlayed);
+
+    // Set CSS variable for progress
+    this.progressBar.style.setProperty('--progress', `${value}%`);
+  } else {
+    // Audio duration is not available yet
+    this.progressBar.value = '0';
+    this.progressBar.setAttribute('aria-valuenow', '0');
+    this.progressBar.setAttribute('aria-valuetext', '0% played');
+
+    // Set CSS variable for progress
+    this.progressBar.style.setProperty('--progress', '0%');
+  }
   }
 
   /**
@@ -784,6 +795,9 @@ export class BespokenAudioPlayer extends HTMLElement {
       /* Styles for the audio player */
       :host {
         --primary-color: blue;
+        --progress-bar-background: #ccc;
+        --progress-bar-fill: var(--primary-color);
+        --progress-bar-thumb: var(--primary-color);
       }
       .playlist-container {
         margin-bottom: 10px;
@@ -850,6 +864,70 @@ export class BespokenAudioPlayer extends HTMLElement {
           margin-top: 5px;
         }
       }
+
+      /* Progress Bar Styles */
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        background-color: transparent;
+        cursor: pointer;
+      }
+
+      /* Track */
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 5px;
+        background-color: var(--progress-bar-background);
+        border-radius: 5px;
+      }
+      input[type="range"]::-moz-range-track {
+        height: 5px;
+        background-color: var(--progress-bar-background);
+        border-radius: 5px;
+      }
+
+      /* Thumb */
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 15px;
+        height: 15px;
+        background-color: var(--progress-bar-thumb);
+        border-radius: 50%;
+        margin-top: -5px; /* Adjust for alignment */
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 15px;
+        height: 15px;
+        background-color: var(--progress-bar-thumb);
+        border-radius: 50%;
+        border: none;
+      }
+
+      /* Filled Track (for Firefox) */
+      input[type="range"]::-moz-range-progress {
+        background-color: var(--progress-bar-fill);
+        height: 5px;
+        border-radius: 5px;
+      }
+
+      /* WebKit Browsers */
+      input[type="range"]::-webkit-slider-runnable-track {
+        background: linear-gradient(
+          to right,
+          var(--progress-bar-fill) 0%,
+          var(--progress-bar-fill) var(--progress),
+          var(--progress-bar-background) var(--progress),
+          var(--progress-bar-background) 100%
+        );
+      }
+
+      /* Mozilla Browsers */
+      input[type="range"]::-moz-range-track {
+        background: var(--progress-bar-background);
+      }
+      input[type="range"]::-moz-range-progress {
+        background-color: var(--progress-bar-fill);
+      }
+
     `;
     this.shadow.appendChild(style);
 
