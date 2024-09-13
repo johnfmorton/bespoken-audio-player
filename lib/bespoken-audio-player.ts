@@ -275,6 +275,44 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.playPauseButton.addEventListener('click', () => this.togglePlayPause());
     controlsContainer.appendChild(this.playPauseButton);
 
+    // Previous track button
+    this.prevButton = document.createElement('button');
+    this.prevButton.setAttribute('part', 'prev-button');
+    this.prevButton.setAttribute('aria-label', 'Previous Track');
+
+    // Use slot for previous icon
+    const prevIconSlot = document.createElement('slot');
+    prevIconSlot.name = 'prev-icon';
+
+    // Default content if no custom icon is provided
+    if (!this.querySelector('[slot="prev-icon"]')) {
+      prevIconSlot.textContent = 'Previous';
+    }
+
+    this.prevButton.appendChild(prevIconSlot);
+    this.prevButton.addEventListener('click', () => this.prevTrack());
+    controlsContainer.appendChild(this.prevButton);
+
+    // Next track button
+    this.nextButton = document.createElement('button');
+    this.nextButton.setAttribute('part', 'next-button');
+    this.nextButton.setAttribute('aria-label', 'Next Track');
+
+    // Use slot for next icon
+    const nextIconSlot = document.createElement('slot');
+    nextIconSlot.name = 'next-icon';
+
+    // Default content if no custom icon is provided
+    if (!this.querySelector('[slot="next-icon"]')) {
+      nextIconSlot.textContent = 'Next';
+    }
+
+    this.nextButton.appendChild(nextIconSlot);
+    this.nextButton.addEventListener('click', () => this.nextTrack());
+    controlsContainer.appendChild(this.nextButton);
+
+
+
     // Previous and Next buttons are only created if there is more than one track
     if (this.playlistData.length > 1) {
       // Previous track button
