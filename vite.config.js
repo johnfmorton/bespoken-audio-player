@@ -12,11 +12,11 @@ module.exports = defineConfig({
         lib: {
             entry: path.resolve(
                 __dirname,
-                'lib/vite-module-builder-w-ghpages-npm-template.ts'
+                'lib/bespoken-audio-player.ts'
             ),
-            name: 'vite-module-builder-w-ghpages-npm-template',
+            name: 'bespoken-audio-player',
             fileName: (format) =>
-                `vite-module-builder-w-ghpages-npm-template.${format}.js`,
+                `bespoken-audio-player.${format}.js`,
         },
         minify: false,
     },
