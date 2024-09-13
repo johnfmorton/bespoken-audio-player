@@ -579,24 +579,29 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Loads the current track based on currentTrackIndex
    */
   private loadCurrentTrack() {
-    if (this.playlistData.length > 0) {
-      const currentTrack = this.playlistData[this.currentTrackIndex];
-      this.audio.src = currentTrack.src;
-      this.audio.load();
-      // Reset progress bar
-      this.progressBar.value = '0';
-      this.updateProgressBar();
-      // Update play/pause button to reflect paused state
-      this.updatePlayPauseButton();
-      // Update playlist UI to indicate the current track
-      this.updatePlaylistUI();
-      // Reset time display
-      this.updateTimeDisplay();
-    } else {
-      this.audio.removeAttribute('src');
-      this.updateControlsState(false);
-    }
+  if (this.playlistData.length > 0) {
+    const currentTrack = this.playlistData[this.currentTrackIndex];
+    this.audio.src = currentTrack.src;
+    this.audio.load();
+
+    // Apply the user's selected playback rate
+    const rate = parseFloat(this.playbackRateSelect.value);
+    this.audio.playbackRate = rate;
+
+    // Reset progress bar
+    this.progressBar.value = '0';
+    this.updateProgressBar();
+    // Update play/pause button to reflect paused state
+    this.updatePlayPauseButton();
+    // Update playlist UI to indicate the current track
+    this.updatePlaylistUI();
+    // Reset time display
+    this.updateTimeDisplay();
+  } else {
+    this.audio.removeAttribute('src');
+    this.updateControlsState(false);
   }
+}
 
   /**
    * Handles media errors and provides fallback content
