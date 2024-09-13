@@ -878,6 +878,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         width: 100%;
       }
       .time-display {
+        font-size: 0.8em;
         margin-left: 10px;
         flex-shrink: 0;
       }
