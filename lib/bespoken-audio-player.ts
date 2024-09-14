@@ -765,10 +765,17 @@ export class BespokenAudioPlayer extends HTMLElement {
 
           // Only add click listener if not only-current-track-visible
           if (!this.isOnlyCurrentTrackVisible) {
+            // Add click listener to toggle play/pause or change track
             trackButton.addEventListener('click', () => {
-              this.currentTrackIndex = index;
-              this.loadCurrentTrack();
-              this.playAudio();
+              if (this.currentTrackIndex === index) {
+                // Clicked on the currently playing track
+                this.togglePlayPause();
+              } else {
+                // Clicked on a different track
+                this.currentTrackIndex = index;
+                this.loadCurrentTrack();
+                this.playAudio();
+              }
             });
           }
 
