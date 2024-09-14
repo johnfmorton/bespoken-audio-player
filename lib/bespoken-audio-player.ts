@@ -433,8 +433,14 @@ export class BespokenAudioPlayer extends HTMLElement {
         });
 
         // Update play/pause button when playback state changes
-        this.audio.addEventListener('play', () => this.updatePlayPauseButton());
-        this.audio.addEventListener('pause', () => this.updatePlayPauseButton());
+        this.audio.addEventListener('play', () => {
+            this.updatePlayPauseButton();
+            this.dispatchEvent(new Event('play'));
+        });
+        this.audio.addEventListener('pause', () => {
+            this.updatePlayPauseButton();
+            this.dispatchEvent(new Event('pause'));
+        });
 
         // Handle track end to move to the next track
         this.audio.addEventListener('ended', () => this.onTrackEnded());
@@ -592,7 +598,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             this.audio.playbackRate = rate;
 
             // Reset progress bar
-            if(this.progressBar) {
+            if (this.progressBar) {
                 this.progressBar.value = '0';
                 this.updateProgressBar();
             }
@@ -605,6 +611,15 @@ export class BespokenAudioPlayer extends HTMLElement {
 
             // Reset time display
             this.updateTimeDisplay();
+
+            // Dispatch the 'trackChange' event
+            this.dispatchEvent(new CustomEvent('trackChange', {
+              detail: {
+                currentTrackIndex: this.currentTrackIndex,
+                track: currentTrack,
+              },
+            }));
+
         } else {
             this.audio.removeAttribute('src');
             this.updateControlsState(false);
@@ -758,6 +773,8 @@ export class BespokenAudioPlayer extends HTMLElement {
             // Single track; stop playback
             this.updatePlayPauseButton();
         }
+        // Dispatch the 'ended' event
+        this.dispatchEvent(new Event('ended'));
     }
 
     /**
@@ -931,7 +948,6 @@ export class BespokenAudioPlayer extends HTMLElement {
         background: none;
         border: none;
         color: var(--primary-color);
-
         cursor: pointer;
       }
       .playlist-container ul {
@@ -955,6 +971,12 @@ export class BespokenAudioPlayer extends HTMLElement {
         font-weight: bold;
         text-decoration: none;
         cursor: default;
+      }
+      .playlist-container svg {
+        width: 10px;
+        height: 10px;
+        top: 0.5px;
+        position: relative;
       }
 
 /* TODO: These styles need work */
