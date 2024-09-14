@@ -107,3 +107,4 @@ demo
 # MacOS
 .DS_Store
 /.vscode
+/.idea
