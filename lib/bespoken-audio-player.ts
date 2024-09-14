@@ -850,20 +850,39 @@ export class BespokenAudioPlayer extends HTMLElement {
         padding: 0;
         margin: 0;
       }
-      .playlist-container li {
-        margin-bottom: 5px;
-      }
+
       .playlist-container button {
         background: none;
         border: none;
         color: var(--primary-color);
-        text-decoration: underline;
+
         cursor: pointer;
+      }
+      .playlist-container ul {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .playlist-container ul li {
+        background-color: #f9f9f9;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        width: 100%;
+      }
+      .playlist-container button {
+        display: block;
+        padding: 10px;
+        width: 100%;
+        text-align: left;
       }
       .playlist-container button.current-track {
         font-weight: bold;
         text-decoration: none;
         cursor: default;
+      }
+      .playlist-container button::before {
+        content: '◦';
+        margin-right: 5px;
       }
       .playlist-container button.current-track::before {
         content: '•';
