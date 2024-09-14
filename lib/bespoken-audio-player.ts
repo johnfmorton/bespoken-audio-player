@@ -309,24 +309,9 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.nextButton.addEventListener('click', () => this.nextTrack());
     controlsContainer.appendChild(this.nextButton);
 
-
-
     // Previous and Next buttons are only created if there is more than one track
     if (this.playlistData.length > 1) {
-      // Previous track button
-      this.prevButton = document.createElement('button');
-      this.prevButton.setAttribute('part', 'prev-button');
-      this.prevButton.textContent = 'Previous';
-      this.prevButton.setAttribute('aria-label', 'Previous Track');
-      this.prevButton.addEventListener('click', () => this.prevTrack());
       controlsContainer.appendChild(this.prevButton);
-
-      // Next track button
-      this.nextButton = document.createElement('button');
-      this.nextButton.setAttribute('part', 'next-button');
-      this.nextButton.textContent = 'Next';
-      this.nextButton.setAttribute('aria-label', 'Next Track');
-      this.nextButton.addEventListener('click', () => this.nextTrack());
       controlsContainer.appendChild(this.nextButton);
     }
 
@@ -760,6 +745,9 @@ export class BespokenAudioPlayer extends HTMLElement {
         if (this.isOnlyCurrentTrackVisible) {
           // Display only the current track
           tracksToDisplay = [this.playlistData[this.currentTrackIndex]];
+          // Add a class to the container for styling
+          this.playlistContainer.classList.add('only-current-track-visible');
+
         } else {
           // Display the full playlist
           tracksToDisplay = this.playlistData;
