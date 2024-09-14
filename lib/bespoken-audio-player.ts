@@ -12,10 +12,10 @@ export class BespokenAudioPlayer extends HTMLElement {
   private currentTrackIndex: number;
 
   // Controls
-  private playPauseButton: HTMLButtonElement;
-  private nextButton?: HTMLButtonElement;
-  private prevButton?: HTMLButtonElement;
-  private playbackRateSelect: HTMLSelectElement;
+  private playPauseButton: HTMLButtonElement | null;
+  private nextButton?: HTMLButtonElement | null;
+  private prevButton?: HTMLButtonElement | null;
+  private playbackRateSelect: HTMLSelectElement | null;
 
   // Progress bar elements
   private progressTimeContainer: HTMLElement; // Container for progress bar and time display
