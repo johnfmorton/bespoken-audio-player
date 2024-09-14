@@ -865,6 +865,10 @@ export class BespokenAudioPlayer extends HTMLElement {
         text-decoration: none;
         cursor: default;
       }
+      .playlist-container button.current-track::before {
+        content: '•';
+        margin-right: 5px;
+      }
       .progress-time-container {
         display: flex;
         flex-direction: row;
