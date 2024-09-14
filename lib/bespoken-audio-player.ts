@@ -504,18 +504,25 @@ export class BespokenAudioPlayer extends HTMLElement {
    * Updates the play/pause button based on playback state
    */
   private updatePlayPauseButton() {
-    const playIconSlot = this.playPauseButton.querySelector('slot[name="play-icon"]') as HTMLSlotElement;
-    const pauseIconSlot = this.playPauseButton.querySelector('slot[name="pause-icon"]') as HTMLSlotElement;
+  if (!this.playPauseButton) return;
 
-    if (this.audio.paused) {
-      this.playPauseButton.setAttribute('aria-label', 'Play');
-      playIconSlot.style.display = '';
-      pauseIconSlot.style.display = 'none';
-    } else {
-      this.playPauseButton.setAttribute('aria-label', 'Pause');
-      playIconSlot.style.display = 'none';
-      pauseIconSlot.style.display = '';
-    }
+  const playIconSlot = this.playPauseButton.querySelector('slot[name="play-icon"]') as HTMLSlotElement;
+  const pauseIconSlot = this.playPauseButton.querySelector('slot[name="pause-icon"]') as HTMLSlotElement;
+
+  if (this.audio.paused) {
+    this.playPauseButton.setAttribute('aria-label', 'Play');
+    this.playPauseButton.setAttribute('aria-pressed', 'false');
+    playIconSlot.style.display = '';
+    pauseIconSlot.style.display = 'none';
+  } else {
+    this.playPauseButton.setAttribute('aria-label', 'Pause');
+    this.playPauseButton.setAttribute('aria-pressed', 'true');
+    playIconSlot.style.display = 'none';
+    pauseIconSlot.style.display = '';
+  }
+
+  // Update the playlist UI to reflect the playback state
+  this.updatePlaylistUI();
   }
 
   /**
@@ -780,10 +787,24 @@ export class BespokenAudioPlayer extends HTMLElement {
           }
 
           // Indicate the currently playing track
-          if (this.playlistData.indexOf(track) === this.currentTrackIndex) {
-            trackButton.classList.add('current-track');
-            trackButton.setAttribute('aria-current', 'true');
-          }
+if (this.currentTrackIndex === index) {
+  trackButton.classList.add('current-track');
+  trackButton.setAttribute('aria-current', 'true');
+
+  if (this.audio.paused) {
+    trackButton.classList.add('paused');
+    trackButton.classList.remove('playing');
+    trackButton.setAttribute('aria-pressed', 'false');
+  } else {
+    trackButton.classList.add('playing');
+    trackButton.classList.remove('paused');
+    trackButton.setAttribute('aria-pressed', 'true');
+  }
+} else {
+  trackButton.classList.remove('current-track', 'playing', 'paused');
+  trackButton.removeAttribute('aria-current');
+  trackButton.setAttribute('aria-pressed', 'false');
+}
 
           listItem.appendChild(trackButton);
           list.appendChild(listItem);
@@ -792,6 +813,8 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.playlistContainer.appendChild(list);
       }
     }
+
+
   }
 
   /**
@@ -873,14 +896,43 @@ export class BespokenAudioPlayer extends HTMLElement {
         text-decoration: none;
         cursor: default;
       }
-      .playlist-container:not(.only-current-track-visible) button::before {
-        content: '◦';
-        margin-right: 5px;
-      }
-      .playlist-container:not(.only-current-track-visible) button.current-track::before {
-        content: '•';
-        margin-right: 5px;
-      }
+
+/* TODO: These styles need work */
+
+   .playlist-container button.current-track.playing {
+  /* Styles when the current track is playing */
+  font-weight: bold;
+}
+
+.playlist-container button.current-track.paused {
+  /* Styles when the current track is paused */
+  // font-weight: normal;
+}
+
+/* Style for track buttons when pressed (playing) */
+.playlist-container button.current-track.playing {
+  background-color: rgba(51, 65, 85, 0.1);
+}
+
+/* Style for track buttons when not pressed (paused) */
+.playlist-container button.current-track.paused {
+  background-color: transparent;
+}
+
+.playlist-container button.current-track.playing::before {
+  content: '⏸︎ '; /* Pause symbol */
+}
+
+.playlist-container button.current-track.paused::before {
+  content: '▶︎ '; /* Play symbol */
+}
+
+.playlist-container button:not(.current-track)::before {
+  content: '• '; /* Bullet point */
+}
+
+/* end of TODO */
+
       .progress-time-container {
         display: flex;
         flex-direction: row;
