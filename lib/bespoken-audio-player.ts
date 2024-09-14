@@ -229,8 +229,6 @@ export class BespokenAudioPlayer extends HTMLElement {
     this.timeDisplay = document.createElement('div');
     this.timeDisplay.setAttribute('class', 'time-display');
     this.timeDisplay.setAttribute('part', 'time-display');
-    this.timeDisplay = document.createElement('div');
-    this.timeDisplay.setAttribute('class', 'time-display');
     this.timeDisplay.setAttribute('aria-live', 'off');
     this.timeDisplay.textContent = '0:00/0:00';
 
@@ -880,11 +878,11 @@ export class BespokenAudioPlayer extends HTMLElement {
         text-decoration: none;
         cursor: default;
       }
-      .playlist-container button::before {
+      .playlist-container:not(.only-current-track-visible) button::before {
         content: '◦';
         margin-right: 5px;
       }
-      .playlist-container button.current-track::before {
+      .playlist-container:not(.only-current-track-visible) button.current-track::before {
         content: '•';
         margin-right: 5px;
       }
@@ -912,7 +910,8 @@ export class BespokenAudioPlayer extends HTMLElement {
         align-items: center;
       }
       button {
-        padding: 6px 10px;
+        padding: 3px 5px;
+        font-size: 0.8rem;
         background-color: var(--button-background, #fff);
         color: var(--button-color, var(--primary-color));
         border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
@@ -921,6 +920,12 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
       select {
         padding: 5px;
+        padding: 3px 5px;
+        background-color: var(--button-background, #fff);
+        color: var(--button-color, var(--primary-color));
+        border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
+        border-radius: 2px;
+        font-size: 0.8rem;
       }
       @media (max-width: 600px) {
         .progress-time-container {
@@ -955,14 +960,16 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
 
       /* Track - Hover State */
-      input[type="range"]:hover::-webkit-slider-runnable-track {
-        background: linear-gradient(
-          to right,
-          var(--progress-bar-fill-hover) 0%,
-          var(--progress-bar-fill-hover) var(--progress),
-          var(--progress-bar-background) var(--progress),
-          var(--progress-bar-background) 100%
-        );
+      @supports (background: color-mix(in srgb, red 50%, blue)) {
+        input[type="range"]:hover::-webkit-slider-runnable-track {
+          background: linear-gradient(
+            to right,
+            color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) 0%,
+            color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) var(--progress),
+            var(--progress-bar-background) var(--progress),
+            var(--progress-bar-background) 100%
+          );
+        }
       }
 
       /* Thumb */
@@ -981,29 +988,6 @@ export class BespokenAudioPlayer extends HTMLElement {
         height: 8px;
         background-color: var(--progress-bar-background);
         border-radius: 5px;
-      }
-
-      /* Using CSS color function (requires browser support) */
-      input[type="range"]::-webkit-slider-runnable-track {
-        /* Normal State */
-        background: linear-gradient(
-          to right,
-          color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) 0%,
-          color-mix(in srgb, var(--progress-bar-fill) 100%, transparent 0%) var(--progress),
-          var(--progress-bar-background) var(--progress),
-          var(--progress-bar-background) 100%
-        );
-      }
-
-      input[type="range"]:hover::-webkit-slider-runnable-track {
-        /* Hover State */
-        background: linear-gradient(
-          to right,
-          color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) 0%,
-          color-mix(in srgb, var(--progress-bar-fill) 65%, transparent 0%) var(--progress),
-          var(--progress-bar-background) var(--progress),
-          var(--progress-bar-background) 100%
-        );
       }
     `;
     this.shadow.appendChild(style);
