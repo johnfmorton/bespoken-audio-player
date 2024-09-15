@@ -1057,8 +1057,8 @@ export class BespokenAudioPlayer extends HTMLElement {
           <!-- Circle -->
           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
           <!-- Exclamation Mark -->
-          <rect x="7.5" y="4" width="1" height="6" fill="currentColor"/>
-          <circle cx="8" cy="12" r="1" fill="currentColor"/>
+          <rect x="7" y="3.25" width="2" height="5.5" fill="currentColor"/>
+          <circle cx="8" cy="11" r="1.5" fill="currentColor"/>
         </symbol>
       `;
         this.shadow.appendChild(svgDefs);
