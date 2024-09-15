@@ -43,7 +43,8 @@ jobs:
       - name: List build output
         run: |
           ls -la
-          ls -la demo
+          echo "** Contents of _site directory: **"
+          ls -la _site
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
