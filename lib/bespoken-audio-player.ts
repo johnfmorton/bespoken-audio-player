@@ -35,6 +35,9 @@ export class BespokenAudioPlayer extends HTMLElement {
     // Keyboard shortcuts map
     private keyboardShortcuts: { [key: string]: () => void };
 
+    // Add to your class properties
+    private trackErrorStates: boolean[] = [];
+
     constructor() {
         super();
         // Attach a shadow DOM tree to this instance
@@ -114,7 +117,10 @@ export class BespokenAudioPlayer extends HTMLElement {
      * Parses the 'tracks' attribute and updates the playlist data.
      */
     private parseTracksAttribute() {
-        const tracksAttr = this.getAttribute('tracks');
+      const tracksAttr = this.getAttribute('tracks');
+
+      this.trackErrorStates = new Array(this.playlistData.length).fill(false);
+
         if (tracksAttr) {
             try {
                 // Parse the JSON string
@@ -543,34 +549,30 @@ export class BespokenAudioPlayer extends HTMLElement {
     /**
      * Moves to the next track in the playlist
      */
-    private nextTrack() {
-        if (this.playlistData.length > 1) {
-            if (this.currentTrackIndex < this.playlistData.length - 1) {
-                this.currentTrackIndex++;
-                this.loadCurrentTrack();
-            } else if (this.isLoopEnabled) {
-                this.currentTrackIndex = 0;
-                this.loadCurrentTrack();
-            }
-            // Do not autoplay; wait for user to initiate playback
-        }
+  private nextTrack() {
+  if (this.playlistData.length > 1) {
+    if (this.hasNextAvailableTrack()) {
+      this.nextAvailableTrack();
+      // Do not autoplay; wait for user to initiate playback
+    } else {
+      console.warn('No next available tracks to play.');
     }
+  }
+}
 
     /**
      * Moves to the previous track in the playlist
      */
-    private prevTrack() {
-        if (this.playlistData.length > 1) {
-            if (this.currentTrackIndex > 0) {
-                this.currentTrackIndex--;
-                this.loadCurrentTrack();
-            } else if (this.isLoopEnabled) {
-                this.currentTrackIndex = this.playlistData.length - 1;
-                this.loadCurrentTrack();
-            }
-            // Do not autoplay; wait for user to initiate playback
-        }
+private prevTrack() {
+  if (this.playlistData.length > 1) {
+    if (this.hasPrevAvailableTrack()) {
+      this.prevAvailableTrack();
+      // Do not autoplay; wait for user to initiate playback
+    } else {
+      console.warn('No previous available tracks to play.');
     }
+  }
+}
 
     /**
      * Adjusts the playback rate based on the select control
@@ -658,6 +660,23 @@ private handleMediaError() {
 
   console.error('Audio Error:', errorMessage, error);
 
+  // Mark the current track as having an error
+  this.trackErrorStates[this.currentTrackIndex] = true;
+
+  // Update the playlist UI to disable the affected track button
+  this.updatePlaylistUI();
+
+  // Attempt to move to the next available track
+  if (this.hasNextAvailableTrack()) {
+    this.nextAvailableTrack();
+    this.playAudio();
+  } else {
+    // No available tracks left
+    this.updateControlsState(false);
+    // Optionally, display a message to the user
+    console.warn('No available tracks to play.');
+  }
+
   // Display the error message to the user
   const errorContainer = document.createElement('div');
   errorContainer.setAttribute('class', 'error-message');
@@ -669,8 +688,8 @@ private handleMediaError() {
     this.shadow.removeChild(existingError);
   }
 
+  // Append the error message to the shadow DOM
   this.shadow.appendChild(errorContainer);
-  this.updateControlsState(false);
 }
 
     /**
@@ -817,98 +836,105 @@ private handleMediaError() {
      * Creates or updates the playlist UI
      */
     private updatePlaylistUI() {
-        // if no playlist container, return
-        if (!this.playlistContainer) return;
+  // if no playlist container, return
+  if (!this.playlistContainer) return;
 
-        // Clear existing playlist items
-        while (this.playlistContainer.firstChild) {
-            this.playlistContainer.removeChild(this.playlistContainer.firstChild);
+  // Clear existing playlist items
+  while (this.playlistContainer.firstChild) {
+    this.playlistContainer.removeChild(this.playlistContainer.firstChild);
+  }
+
+  if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
+    if (this.playlistData.length > 0) {
+      // Create a list element
+      const list = document.createElement('ul');
+      list.setAttribute('role', 'list');
+
+      // Determine which tracks to display
+      let tracksToDisplay: { src: string; title: string }[] = [];
+
+      if (this.isOnlyCurrentTrackVisible) {
+        // Display only the current track
+        tracksToDisplay = [this.playlistData[this.currentTrackIndex]];
+        this.playlistContainer.classList.add('only-current-track-visible');
+      } else {
+        // Display the full playlist
+        tracksToDisplay = this.playlistData;
+      }
+
+      tracksToDisplay.forEach((track, idx) => {
+        // Adjust index based on visibility setting
+        const actualIndex = this.isOnlyCurrentTrackVisible ? this.currentTrackIndex : idx;
+
+        const listItem = document.createElement('li');
+        listItem.setAttribute('role', 'listitem');
+
+        // Create a button to represent the track
+        const trackButton = document.createElement('button');
+        const trackTitle = track.title || this.extractFileName(track.src);
+        trackButton.setAttribute('aria-label', `Play ${trackTitle}`);
+
+        // Disable the button if the track has an error
+        const isTrackError = this.trackErrorStates[actualIndex];
+        trackButton.disabled = isTrackError;
+
+        // Create an SVG icon element
+        const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        iconSvg.setAttribute('width', '16');
+        iconSvg.setAttribute('height', '16');
+        iconSvg.setAttribute('aria-hidden', 'true');
+
+        const useElement = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '');
+
+        iconSvg.appendChild(useElement);
+
+        // In the part where you set the icon
+if (isTrackError) {
+  useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#error-icon');
+} else if (this.currentTrackIndex === actualIndex) {
+  // Set the appropriate icon based on state
+  trackButton.classList.add('current-track');
+          trackButton.setAttribute('aria-current', 'true');
+
+          if (this.audio && this.audio.paused) {
+            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#play-icon');
+            trackButton.setAttribute('aria-pressed', 'false');
+          } else {
+            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#pause-icon');
+            trackButton.setAttribute('aria-pressed', 'true');
+          }
+        } else {
+          useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#bullet-icon');
+          trackButton.setAttribute('aria-pressed', 'false');
         }
 
-        if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
-            if (this.playlistData.length > 0) {
-                // Create a list element
-                const list = document.createElement('ul');
-                list.setAttribute('role', 'list');
+        // Append the icon and text to the button
+        trackButton.appendChild(iconSvg);
+        const textNode = document.createTextNode(` ${trackTitle}`); // Add a space for separation
+        trackButton.appendChild(textNode);
 
-                // Determine which tracks to display
-                let tracksToDisplay: { src: string; title: string }[] = [];
+        // Add click listener to toggle play/pause or change track
+        trackButton.addEventListener('click', () => {
+          if (this.currentTrackIndex === actualIndex) {
+            // Clicked on the currently playing track
+            this.togglePlayPause();
+          } else {
+            // Clicked on a different track
+            this.currentTrackIndex = actualIndex;
+            this.loadCurrentTrack();
+            this.playAudio();
+          }
+        });
 
-                if (this.isOnlyCurrentTrackVisible) {
-                    // Display only the current track
-                    tracksToDisplay = [this.playlistData[this.currentTrackIndex]];
-                    this.playlistContainer.classList.add('only-current-track-visible');
-                } else {
-                    // Display the full playlist
-                    tracksToDisplay = this.playlistData;
-                }
+        listItem.appendChild(trackButton);
+        list.appendChild(listItem);
+      });
 
-                tracksToDisplay.forEach((track, idx) => {
-                    // Adjust index based on visibility setting
-                    const actualIndex = this.isOnlyCurrentTrackVisible ? this.currentTrackIndex : idx;
-
-                    const listItem = document.createElement('li');
-                    listItem.setAttribute('role', 'listitem');
-
-                    // Create a button to represent the track
-                    const trackButton = document.createElement('button');
-                    const trackTitle = track.title || this.extractFileName(track.src);
-                    trackButton.setAttribute('aria-label', `Play ${trackTitle}`);
-
-                    // Create an SVG icon element
-                    const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                    iconSvg.setAttribute('width', '16');
-                    iconSvg.setAttribute('height', '16');
-                    iconSvg.setAttribute('aria-hidden', 'true');
-
-                    const useElement = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-                    useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '');
-
-                    iconSvg.appendChild(useElement);
-
-                    // Set the appropriate icon based on state
-                    if (this.currentTrackIndex === actualIndex) {
-                        trackButton.classList.add('current-track');
-                        trackButton.setAttribute('aria-current', 'true');
-
-                        if (this.audio && this.audio.paused) {
-                            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#play-icon');
-                            trackButton.setAttribute('aria-pressed', 'false');
-                        } else {
-                            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#pause-icon');
-                            trackButton.setAttribute('aria-pressed', 'true');
-                        }
-                    } else {
-                        useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#bullet-icon');
-                        trackButton.setAttribute('aria-pressed', 'false');
-                    }
-
-                    // Append the icon and text to the button
-                    trackButton.appendChild(iconSvg);
-                    const textNode = document.createTextNode(` ${trackTitle}`); // Add a space for separation
-                    trackButton.appendChild(textNode);
-
-                    // Add click listener to toggle play/pause or change track
-                    trackButton.addEventListener('click', () => {
-                        if (this.currentTrackIndex === actualIndex) {
-                            // Clicked on the currently playing track
-                            this.togglePlayPause();
-                        } else {
-                            // Clicked on a different track
-                            this.currentTrackIndex = actualIndex;
-                            this.loadCurrentTrack();
-                            this.playAudio();
-                        }
-                    });
-
-                    listItem.appendChild(trackButton);
-                    list.appendChild(listItem);
-                });
-
-                this.playlistContainer.appendChild(list);
-            }
-        }
+      this.playlistContainer.appendChild(list);
     }
+  }
+}
 
     /**
      * Extracts the file name from the source URL
@@ -939,6 +965,66 @@ private handleMediaError() {
         }
     }
 
+  private hasNextAvailableTrack(): boolean {
+  const totalTracks = this.playlistData.length;
+  let nextIndex = this.currentTrackIndex;
+
+  for (let i = 1; i < totalTracks; i++) {
+    nextIndex = (this.currentTrackIndex + i) % totalTracks;
+    if (!this.trackErrorStates[nextIndex]) {
+      return true;
+    }
+  }
+  return false;
+  }
+
+  private hasPrevAvailableTrack(): boolean {
+  const totalTracks = this.playlistData.length;
+  let prevIndex = this.currentTrackIndex;
+
+  for (let i = 1; i < totalTracks; i++) {
+    prevIndex = (this.currentTrackIndex - i + totalTracks) % totalTracks;
+    if (!this.trackErrorStates[prevIndex]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+  private nextAvailableTrack() {
+  const totalTracks = this.playlistData.length;
+  let nextIndex = this.currentTrackIndex;
+
+  do {
+    nextIndex = (nextIndex + 1) % totalTracks;
+    if (!this.trackErrorStates[nextIndex]) {
+      this.currentTrackIndex = nextIndex;
+      this.loadCurrentTrack();
+      return;
+    }
+  } while (nextIndex !== this.currentTrackIndex);
+
+  // No available tracks found
+  console.warn('No available tracks to play.');
+}
+
+private prevAvailableTrack() {
+  const totalTracks = this.playlistData.length;
+  let prevIndex = this.currentTrackIndex;
+
+  do {
+    prevIndex = (prevIndex - 1 + totalTracks) % totalTracks;
+    if (!this.trackErrorStates[prevIndex]) {
+      this.currentTrackIndex = prevIndex;
+      this.loadCurrentTrack();
+      return;
+    }
+  } while (prevIndex !== this.currentTrackIndex);
+
+  // No available tracks found
+  console.warn('No available tracks to play.');
+}
+
     /**
      * Renders the component's HTML structure and styles
      */
@@ -958,7 +1044,10 @@ private handleMediaError() {
       <symbol id="bullet-icon" viewBox="0 0 16 16">
         <circle cx="8" cy="8" r="4" fill="currentColor"/>
       </symbol>
-    `;
+      <symbol id="error-icon" viewBox="0 0 16 16">
+        <path d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 8 3zm.93 3.412L8.57 9.506h-.002L8 11h1l.57-1.494h-.001l.359-3.094H8.93zM8 4a.5.5 0 0 1 .5.5v.278a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4z" fill="currentColor"/>
+      </symbol>
+      `;
         this.shadow.appendChild(svgDefs);
 
         // Optionally, you can add styles here or link to an external stylesheet
@@ -1154,6 +1243,20 @@ private handleMediaError() {
         background-color: var(--progress-bar-background);
         border-radius: 5px;
       }
+
+
+/* Style for disabled buttons */
+.playlist-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: gray; /* Optional: Change text color */
+}
+
+/* Optionally, add an error icon */
+.playlist-container button:disabled svg use {
+  href: '#error-icon'; /* Reference an error icon */
+}
+
     `;
         this.shadow.appendChild(style);
 
@@ -1175,7 +1278,10 @@ private handleMediaError() {
      * Allows setting the playlist via the 'tracks' attribute or property
      */
     set tracks(value: { src: string; title: string }[]) {
-        if (Array.isArray(value)) {
+      if (Array.isArray(value)) {
+        this.playlistData = value.filter((track) => typeof track.src === 'string');
+        this.trackErrorStates = new Array(this.playlistData.length).fill(false);
+
             this.playlistData = value.filter((track) => typeof track.src === 'string');
 
             if (this.playlistData.length === 0) {
