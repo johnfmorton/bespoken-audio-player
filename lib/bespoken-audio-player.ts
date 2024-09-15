@@ -1285,7 +1285,7 @@ select {
   appearance: none;
   border: 1px solid var(--primary-color, #334155);
   background-color: var(--select-background, #fff);
-  color: var(--primary-color, #334155);
+  color: var(--select-color, #334155);
   padding: 3px 8px;
   font-size: 0.75rem;
   border-radius: 2px;
