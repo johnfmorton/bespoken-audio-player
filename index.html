@@ -95,7 +95,7 @@
 
       <bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
                              only-current-track-visible x-playlist-visible tracks='[
-        {"src": "demo-page-assets/fish-and-chips.mp3", "title": "Introduction"},
+        {"src": "demo-page-assets/test.mp3", "title": "Hello from an API"},
         {"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"},
         {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
       ]'></bespoken-audio-player>
@@ -106,9 +106,9 @@
         <bespoken-audio-player id="my-audio-player"
                                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
                                playlist-visible tracks='[
-      {"src": "demo-page-assets/fish-and-chips.mp3", "title": "Introduction"},
-      {"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"},
-      {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
+      {"src": "demo-page-assets/tests.mp3", "title": "Hello from an API"},
+      {"src": "demo-page-assets/hello-america-audio-20240913-063213ERROR.mp3"},
+      {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
     ]'>
           <!-- Custom Play Icon -->
           <svg slot="play-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -188,6 +188,11 @@
   player.addEventListener('trackChange', (event) => {
     console.log('Event: trackChange', event.detail);
   });
+
+  player.addEventListener('error', (event) => {
+      const { code, message, mediaError, trackIndex } = event.detail;
+      console.error(`Error on track ${trackIndex}:`, message);
+    });
 </script>
 </body>
 

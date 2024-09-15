@@ -228,7 +228,13 @@ bespoken-audio-player::part(play-button) {
 - **`play`**: Fired when playback starts.
 - **`pause`**: Fired when playback is paused.
 - **`ended`**: Fired when the track ends.
-- **`trackChange`**: Fired when the current track changes. This event includes the new track index, `currentTrackIndex`, and the `track` itself..
+- **`trackChange`**: Fired when the current track changes. This event includes the new track index, `currentTrackIndex`, and the `track` itself.
+- **`error`**: Fired when an error occurs during playback. This event includes:•
+   - code: The error code from MediaError.code.	
+   - message: A descriptive error message.
+   - mediaError: The original MediaError object.
+   - trackIndex: The index of the track that caused the error.
+   - track: The track object ({ src, title }) that caused the error.
 
 ```javascript
 const player = document.querySelector('bespoken-audio-player');
@@ -242,6 +248,14 @@ const player = document.querySelector('bespoken-audio-player');
 player.addEventListener('trackchange', (event) => {
   const { currentTrackIndex, track } = event.detail;
   console.log(`Track changed to index ${currentTrackIndex}`, track);
+});
+```
+
+```javascript
+player.addEventListener('error', (event) => {
+  const { code, message, mediaError, trackIndex, track } = event.detail;
+  console.error(`Error on track ${trackIndex}:`, message);
+  // You can handle the error as needed, e.g., display a custom message
 });
 ```
 

@@ -117,9 +117,9 @@ export class BespokenAudioPlayer extends HTMLElement {
      * Parses the 'tracks' attribute and updates the playlist data.
      */
     private parseTracksAttribute() {
-      const tracksAttr = this.getAttribute('tracks');
+        const tracksAttr = this.getAttribute('tracks');
 
-      this.trackErrorStates = new Array(this.playlistData.length).fill(false);
+        this.trackErrorStates = new Array(this.playlistData.length).fill(false);
 
         if (tracksAttr) {
             try {
@@ -549,30 +549,30 @@ export class BespokenAudioPlayer extends HTMLElement {
     /**
      * Moves to the next track in the playlist
      */
-  private nextTrack() {
-  if (this.playlistData.length > 1) {
-    if (this.hasNextAvailableTrack()) {
-      this.nextAvailableTrack();
-      // Do not autoplay; wait for user to initiate playback
-    } else {
-      console.warn('No next available tracks to play.');
+    private nextTrack() {
+        if (this.playlistData.length > 1) {
+            if (this.hasNextAvailableTrack()) {
+                this.nextAvailableTrack();
+                // Do not autoplay; wait for user to initiate playback
+            } else {
+                console.warn('No next available tracks to play.');
+            }
+        }
     }
-  }
-}
 
     /**
      * Moves to the previous track in the playlist
      */
-private prevTrack() {
-  if (this.playlistData.length > 1) {
-    if (this.hasPrevAvailableTrack()) {
-      this.prevAvailableTrack();
-      // Do not autoplay; wait for user to initiate playback
-    } else {
-      console.warn('No previous available tracks to play.');
+    private prevTrack() {
+        if (this.playlistData.length > 1) {
+            if (this.hasPrevAvailableTrack()) {
+                this.prevAvailableTrack();
+                // Do not autoplay; wait for user to initiate playback
+            } else {
+                console.warn('No previous available tracks to play.');
+            }
+        }
     }
-  }
-}
 
     /**
      * Adjusts the playback rate based on the select control
@@ -616,10 +616,10 @@ private prevTrack() {
 
             // Dispatch the 'trackChange' event
             this.dispatchEvent(new CustomEvent('trackChange', {
-              detail: {
-                currentTrackIndex: this.currentTrackIndex,
-                track: currentTrack,
-              },
+                detail: {
+                    currentTrackIndex: this.currentTrackIndex,
+                    track: currentTrack,
+                },
             }));
 
         } else {
@@ -629,68 +629,77 @@ private prevTrack() {
     }
 
     /**
-     * Handles media errors and provides fallback content
+     * Handles media errors and provides detailed error messages
      */
-    /**
- * Handles media errors and provides detailed error messages
- */
-private handleMediaError() {
-  const error = this.audio?.error;
-  let errorMessage = 'An unknown error occurred while loading the audio.';
+    private handleMediaError() {
+        const error = this.audio?.error;
+        let errorMessage = 'An unknown error occurred while loading the audio.';
+        let errorCode = 0;
 
-  if (error) {
-    switch (error.code) {
-      case MediaError.MEDIA_ERR_ABORTED:
-        errorMessage = 'Playback was aborted by the user.';
-        break;
-      case MediaError.MEDIA_ERR_NETWORK:
-        errorMessage = 'A network error prevented the audio from loading. Please check your internet connection.';
-        break;
-      case MediaError.MEDIA_ERR_DECODE:
-        errorMessage = 'An error occurred while decoding the audio. The file may be corrupt or in an unsupported format.';
-        break;
-      case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-        errorMessage = 'The audio format is not supported or the file was not found (404 error).';
-        break;
-      default:
-        errorMessage = 'An unknown error occurred while loading the audio.';
-        break;
+        if (error) {
+            switch (error.code) {
+                case MediaError.MEDIA_ERR_ABORTED:
+                    errorMessage = 'Playback was aborted by the user.';
+                    break;
+                case MediaError.MEDIA_ERR_NETWORK:
+                    errorMessage = 'A network error prevented the audio from loading. Please check your internet connection.';
+                    break;
+                case MediaError.MEDIA_ERR_DECODE:
+                    errorMessage = 'An error occurred while decoding the audio. The file may be corrupt or in an unsupported format.';
+                    break;
+                case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                    errorMessage = 'The audio format is not supported or the file was not found (404 error).';
+                    break;
+                default:
+                    errorMessage = 'An unknown error occurred while loading the audio.';
+                    break;
+            }
+        }
+
+        // Dispatch the 'error' event with details
+        this.dispatchEvent(
+            new CustomEvent('error', {
+                detail: {
+                    code: errorCode,
+                    message: errorMessage,
+                    mediaError: error,
+                    trackIndex: this.currentTrackIndex,
+                    track: this.playlistData[this.currentTrackIndex],
+                },
+            })
+        );
+
+        // Mark the current track as having an error
+        this.trackErrorStates[this.currentTrackIndex] = true;
+
+        // Update the playlist UI to disable the affected track button
+        this.updatePlaylistUI();
+
+        // Attempt to move to the next available track
+        if (this.hasNextAvailableTrack()) {
+            this.nextAvailableTrack();
+            this.playAudio();
+        } else {
+            // No available tracks left
+            this.updateControlsState(false);
+            // Optionally, display a message to the user
+            console.warn('No available tracks to play.');
+        }
+
+        // Display the error message to the user
+        const errorContainer = document.createElement('div');
+        errorContainer.setAttribute('class', 'error-message');
+        errorContainer.textContent = errorMessage;
+
+        // Remove any existing error messages
+        const existingError = this.shadow.querySelector('.error-message');
+        if (existingError) {
+            this.shadow.removeChild(existingError);
+        }
+
+        // Append the error message to the shadow DOM
+        this.shadow.appendChild(errorContainer);
     }
-  }
-
-  console.error('Audio Error:', errorMessage, error);
-
-  // Mark the current track as having an error
-  this.trackErrorStates[this.currentTrackIndex] = true;
-
-  // Update the playlist UI to disable the affected track button
-  this.updatePlaylistUI();
-
-  // Attempt to move to the next available track
-  if (this.hasNextAvailableTrack()) {
-    this.nextAvailableTrack();
-    this.playAudio();
-  } else {
-    // No available tracks left
-    this.updateControlsState(false);
-    // Optionally, display a message to the user
-    console.warn('No available tracks to play.');
-  }
-
-  // Display the error message to the user
-  const errorContainer = document.createElement('div');
-  errorContainer.setAttribute('class', 'error-message');
-  errorContainer.textContent = errorMessage;
-
-  // Remove any existing error messages
-  const existingError = this.shadow.querySelector('.error-message');
-  if (existingError) {
-    this.shadow.removeChild(existingError);
-  }
-
-  // Append the error message to the shadow DOM
-  this.shadow.appendChild(errorContainer);
-}
 
     /**
      * Updates the progress bar as the audio plays
@@ -836,105 +845,105 @@ private handleMediaError() {
      * Creates or updates the playlist UI
      */
     private updatePlaylistUI() {
-  // if no playlist container, return
-  if (!this.playlistContainer) return;
+        // if no playlist container, return
+        if (!this.playlistContainer) return;
 
-  // Clear existing playlist items
-  while (this.playlistContainer.firstChild) {
-    this.playlistContainer.removeChild(this.playlistContainer.firstChild);
-  }
-
-  if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
-    if (this.playlistData.length > 0) {
-      // Create a list element
-      const list = document.createElement('ul');
-      list.setAttribute('role', 'list');
-
-      // Determine which tracks to display
-      let tracksToDisplay: { src: string; title: string }[] = [];
-
-      if (this.isOnlyCurrentTrackVisible) {
-        // Display only the current track
-        tracksToDisplay = [this.playlistData[this.currentTrackIndex]];
-        this.playlistContainer.classList.add('only-current-track-visible');
-      } else {
-        // Display the full playlist
-        tracksToDisplay = this.playlistData;
-      }
-
-      tracksToDisplay.forEach((track, idx) => {
-        // Adjust index based on visibility setting
-        const actualIndex = this.isOnlyCurrentTrackVisible ? this.currentTrackIndex : idx;
-
-        const listItem = document.createElement('li');
-        listItem.setAttribute('role', 'listitem');
-
-        // Create a button to represent the track
-        const trackButton = document.createElement('button');
-        const trackTitle = track.title || this.extractFileName(track.src);
-        trackButton.setAttribute('aria-label', `Play ${trackTitle}`);
-
-        // Disable the button if the track has an error
-        const isTrackError = this.trackErrorStates[actualIndex];
-        trackButton.disabled = isTrackError;
-
-        // Create an SVG icon element
-        const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        iconSvg.setAttribute('width', '16');
-        iconSvg.setAttribute('height', '16');
-        iconSvg.setAttribute('aria-hidden', 'true');
-
-        const useElement = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-        useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '');
-
-        iconSvg.appendChild(useElement);
-
-        // In the part where you set the icon
-if (isTrackError) {
-  useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#error-icon');
-} else if (this.currentTrackIndex === actualIndex) {
-  // Set the appropriate icon based on state
-  trackButton.classList.add('current-track');
-          trackButton.setAttribute('aria-current', 'true');
-
-          if (this.audio && this.audio.paused) {
-            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#play-icon');
-            trackButton.setAttribute('aria-pressed', 'false');
-          } else {
-            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#pause-icon');
-            trackButton.setAttribute('aria-pressed', 'true');
-          }
-        } else {
-          useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#bullet-icon');
-          trackButton.setAttribute('aria-pressed', 'false');
+        // Clear existing playlist items
+        while (this.playlistContainer.firstChild) {
+            this.playlistContainer.removeChild(this.playlistContainer.firstChild);
         }
 
-        // Append the icon and text to the button
-        trackButton.appendChild(iconSvg);
-        const textNode = document.createTextNode(` ${trackTitle}`); // Add a space for separation
-        trackButton.appendChild(textNode);
+        if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
+            if (this.playlistData.length > 0) {
+                // Create a list element
+                const list = document.createElement('ul');
+                list.setAttribute('role', 'list');
 
-        // Add click listener to toggle play/pause or change track
-        trackButton.addEventListener('click', () => {
-          if (this.currentTrackIndex === actualIndex) {
-            // Clicked on the currently playing track
-            this.togglePlayPause();
-          } else {
-            // Clicked on a different track
-            this.currentTrackIndex = actualIndex;
-            this.loadCurrentTrack();
-            this.playAudio();
-          }
-        });
+                // Determine which tracks to display
+                let tracksToDisplay: { src: string; title: string }[] = [];
 
-        listItem.appendChild(trackButton);
-        list.appendChild(listItem);
-      });
+                if (this.isOnlyCurrentTrackVisible) {
+                    // Display only the current track
+                    tracksToDisplay = [this.playlistData[this.currentTrackIndex]];
+                    this.playlistContainer.classList.add('only-current-track-visible');
+                } else {
+                    // Display the full playlist
+                    tracksToDisplay = this.playlistData;
+                }
 
-      this.playlistContainer.appendChild(list);
+                tracksToDisplay.forEach((track, idx) => {
+                    // Adjust index based on visibility setting
+                    const actualIndex = this.isOnlyCurrentTrackVisible ? this.currentTrackIndex : idx;
+
+                    const listItem = document.createElement('li');
+                    listItem.setAttribute('role', 'listitem');
+
+                    // Create a button to represent the track
+                    const trackButton = document.createElement('button');
+                    const trackTitle = track.title || this.extractFileName(track.src);
+                    trackButton.setAttribute('aria-label', `Play ${trackTitle}`);
+
+                    // Disable the button if the track has an error
+                    const isTrackError = this.trackErrorStates[actualIndex];
+                    trackButton.disabled = isTrackError;
+
+                    // Create an SVG icon element
+                    const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    iconSvg.setAttribute('width', '16');
+                    iconSvg.setAttribute('height', '16');
+                    iconSvg.setAttribute('aria-hidden', 'true');
+
+                    const useElement = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                    useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '');
+
+                    iconSvg.appendChild(useElement);
+
+                    // In the part where you set the icon
+                    if (isTrackError) {
+                        useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#error-icon');
+                    } else if (this.currentTrackIndex === actualIndex) {
+                        // Set the appropriate icon based on state
+                        trackButton.classList.add('current-track');
+                        trackButton.setAttribute('aria-current', 'true');
+
+                        if (this.audio && this.audio.paused) {
+                            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#play-icon');
+                            trackButton.setAttribute('aria-pressed', 'false');
+                        } else {
+                            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#pause-icon');
+                            trackButton.setAttribute('aria-pressed', 'true');
+                        }
+                    } else {
+                        useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#bullet-icon');
+                        trackButton.setAttribute('aria-pressed', 'false');
+                    }
+
+                    // Append the icon and text to the button
+                    trackButton.appendChild(iconSvg);
+                    const textNode = document.createTextNode(` ${trackTitle}`); // Add a space for separation
+                    trackButton.appendChild(textNode);
+
+                    // Add click listener to toggle play/pause or change track
+                    trackButton.addEventListener('click', () => {
+                        if (this.currentTrackIndex === actualIndex) {
+                            // Clicked on the currently playing track
+                            this.togglePlayPause();
+                        } else {
+                            // Clicked on a different track
+                            this.currentTrackIndex = actualIndex;
+                            this.loadCurrentTrack();
+                            this.playAudio();
+                        }
+                    });
+
+                    listItem.appendChild(trackButton);
+                    list.appendChild(listItem);
+                });
+
+                this.playlistContainer.appendChild(list);
+            }
+        }
     }
-  }
-}
 
     /**
      * Extracts the file name from the source URL
@@ -965,65 +974,65 @@ if (isTrackError) {
         }
     }
 
-  private hasNextAvailableTrack(): boolean {
-  const totalTracks = this.playlistData.length;
-  let nextIndex = this.currentTrackIndex;
+    private hasNextAvailableTrack(): boolean {
+        const totalTracks = this.playlistData.length;
+        let nextIndex = this.currentTrackIndex;
 
-  for (let i = 1; i < totalTracks; i++) {
-    nextIndex = (this.currentTrackIndex + i) % totalTracks;
-    if (!this.trackErrorStates[nextIndex]) {
-      return true;
+        for (let i = 1; i < totalTracks; i++) {
+            nextIndex = (this.currentTrackIndex + i) % totalTracks;
+            if (!this.trackErrorStates[nextIndex]) {
+                return true;
+            }
+        }
+        return false;
     }
-  }
-  return false;
-  }
 
-  private hasPrevAvailableTrack(): boolean {
-  const totalTracks = this.playlistData.length;
-  let prevIndex = this.currentTrackIndex;
+    private hasPrevAvailableTrack(): boolean {
+        const totalTracks = this.playlistData.length;
+        let prevIndex = this.currentTrackIndex;
 
-  for (let i = 1; i < totalTracks; i++) {
-    prevIndex = (this.currentTrackIndex - i + totalTracks) % totalTracks;
-    if (!this.trackErrorStates[prevIndex]) {
-      return true;
+        for (let i = 1; i < totalTracks; i++) {
+            prevIndex = (this.currentTrackIndex - i + totalTracks) % totalTracks;
+            if (!this.trackErrorStates[prevIndex]) {
+                return true;
+            }
+        }
+        return false;
     }
-  }
-  return false;
-}
 
-  private nextAvailableTrack() {
-  const totalTracks = this.playlistData.length;
-  let nextIndex = this.currentTrackIndex;
+    private nextAvailableTrack() {
+        const totalTracks = this.playlistData.length;
+        let nextIndex = this.currentTrackIndex;
 
-  do {
-    nextIndex = (nextIndex + 1) % totalTracks;
-    if (!this.trackErrorStates[nextIndex]) {
-      this.currentTrackIndex = nextIndex;
-      this.loadCurrentTrack();
-      return;
+        do {
+            nextIndex = (nextIndex + 1) % totalTracks;
+            if (!this.trackErrorStates[nextIndex]) {
+                this.currentTrackIndex = nextIndex;
+                this.loadCurrentTrack();
+                return;
+            }
+        } while (nextIndex !== this.currentTrackIndex);
+
+        // No available tracks found
+        console.warn('No available tracks to play.');
     }
-  } while (nextIndex !== this.currentTrackIndex);
 
-  // No available tracks found
-  console.warn('No available tracks to play.');
-}
+    private prevAvailableTrack() {
+        const totalTracks = this.playlistData.length;
+        let prevIndex = this.currentTrackIndex;
 
-private prevAvailableTrack() {
-  const totalTracks = this.playlistData.length;
-  let prevIndex = this.currentTrackIndex;
+        do {
+            prevIndex = (prevIndex - 1 + totalTracks) % totalTracks;
+            if (!this.trackErrorStates[prevIndex]) {
+                this.currentTrackIndex = prevIndex;
+                this.loadCurrentTrack();
+                return;
+            }
+        } while (prevIndex !== this.currentTrackIndex);
 
-  do {
-    prevIndex = (prevIndex - 1 + totalTracks) % totalTracks;
-    if (!this.trackErrorStates[prevIndex]) {
-      this.currentTrackIndex = prevIndex;
-      this.loadCurrentTrack();
-      return;
+        // No available tracks found
+        console.warn('No available tracks to play.');
     }
-  } while (prevIndex !== this.currentTrackIndex);
-
-  // No available tracks found
-  console.warn('No available tracks to play.');
-}
 
     /**
      * Renders the component's HTML structure and styles
@@ -1045,8 +1054,12 @@ private prevAvailableTrack() {
         <circle cx="8" cy="8" r="4" fill="currentColor"/>
       </symbol>
       <symbol id="error-icon" viewBox="0 0 16 16">
-        <path d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 8 3zm.93 3.412L8.57 9.506h-.002L8 11h1l.57-1.494h-.001l.359-3.094H8.93zM8 4a.5.5 0 0 1 .5.5v.278a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4z" fill="currentColor"/>
-      </symbol>
+          <!-- Circle -->
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
+          <!-- Exclamation Mark -->
+          <rect x="7.5" y="4" width="1" height="6" fill="currentColor"/>
+          <circle cx="8" cy="12" r="1" fill="currentColor"/>
+        </symbol>
       `;
         this.shadow.appendChild(svgDefs);
 
@@ -1257,6 +1270,13 @@ private prevAvailableTrack() {
   href: '#error-icon'; /* Reference an error icon */
 }
 
+/* Error Message Styles */
+.error-message {
+  color: #ca3a31;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
     `;
         this.shadow.appendChild(style);
 
@@ -1278,9 +1298,9 @@ private prevAvailableTrack() {
      * Allows setting the playlist via the 'tracks' attribute or property
      */
     set tracks(value: { src: string; title: string }[]) {
-      if (Array.isArray(value)) {
-        this.playlistData = value.filter((track) => typeof track.src === 'string');
-        this.trackErrorStates = new Array(this.playlistData.length).fill(false);
+        if (Array.isArray(value)) {
+            this.playlistData = value.filter((track) => typeof track.src === 'string');
+            this.trackErrorStates = new Array(this.playlistData.length).fill(false);
 
             this.playlistData = value.filter((track) => typeof track.src === 'string');
 
