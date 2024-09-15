@@ -1277,6 +1277,47 @@ export class BespokenAudioPlayer extends HTMLElement {
   margin-top: 10px;
 }
 
+
+/* Remove default browser styles */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 1px solid var(--primary-color, #334155);
+  background-color: var(--select-background, #fff);
+  color: var(--primary-color, #334155);
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  border-radius: 2px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 70px; /* Set width to keep it consistent */
+}
+
+/* Add custom dropdown indicator */
+select {
+  background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 6l4 4 4-4H4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 30px; /* Ensure space for dropdown arrow */
+}
+
+/* Ensure consistent focus outline */
+select:focus {
+  outline: none;
+  border-color: var(--focus-color, #2563eb);
+  box-shadow: 0 0 3px 1px var(--focus-color, #2563eb);
+}
+
+/* Style for disabled select */
+select:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
     `;
         this.shadow.appendChild(style);
 
