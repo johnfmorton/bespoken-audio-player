@@ -629,13 +629,49 @@ export class BespokenAudioPlayer extends HTMLElement {
     /**
      * Handles media errors and provides fallback content
      */
-    private handleMediaError() {
-        console.error('An error occurred while attempting to load the audio.');
-        const errorContainer = document.createElement('div');
-        errorContainer.textContent = 'The audio cannot be played at this time.';
-        this.shadow.appendChild(errorContainer);
-        this.updateControlsState(false);
+    /**
+ * Handles media errors and provides detailed error messages
+ */
+private handleMediaError() {
+  const error = this.audio?.error;
+  let errorMessage = 'An unknown error occurred while loading the audio.';
+
+  if (error) {
+    switch (error.code) {
+      case MediaError.MEDIA_ERR_ABORTED:
+        errorMessage = 'Playback was aborted by the user.';
+        break;
+      case MediaError.MEDIA_ERR_NETWORK:
+        errorMessage = 'A network error prevented the audio from loading. Please check your internet connection.';
+        break;
+      case MediaError.MEDIA_ERR_DECODE:
+        errorMessage = 'An error occurred while decoding the audio. The file may be corrupt or in an unsupported format.';
+        break;
+      case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+        errorMessage = 'The audio format is not supported or the file was not found (404 error).';
+        break;
+      default:
+        errorMessage = 'An unknown error occurred while loading the audio.';
+        break;
     }
+  }
+
+  console.error('Audio Error:', errorMessage, error);
+
+  // Display the error message to the user
+  const errorContainer = document.createElement('div');
+  errorContainer.setAttribute('class', 'error-message');
+  errorContainer.textContent = errorMessage;
+
+  // Remove any existing error messages
+  const existingError = this.shadow.querySelector('.error-message');
+  if (existingError) {
+    this.shadow.removeChild(existingError);
+  }
+
+  this.shadow.appendChild(errorContainer);
+  this.updateControlsState(false);
+}
 
     /**
      * Updates the progress bar as the audio plays
