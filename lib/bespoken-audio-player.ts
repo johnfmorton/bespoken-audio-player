@@ -1139,18 +1139,6 @@ export class BespokenAudioPlayer extends HTMLElement {
   background-color: transparent;
 }
 
-// .playlist-container button.current-track.playing::before {
-//   content: '⏸︎ '; /* Pause symbol */
-// }
-
-// .playlist-container button.current-track.paused::before {
-//   content: '▶︎ '; /* Play symbol */
-// }
-
-// .playlist-container button:not(.current-track)::before {
-//   content: '• '; /* Bullet point */
-// }
-
 /* end of TODO */
 
       .progress-time-container {
@@ -1176,24 +1164,75 @@ export class BespokenAudioPlayer extends HTMLElement {
         margin-top: 10px;
         align-items: center;
       }
+      
       button {
         padding: 3px 5px;
         font-size: 0.8rem;
         background-color: var(--button-background, #fff);
         color: var(--button-color, var(--primary-color));
-        border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
+        
         border-radius: 2px;
         cursor: pointer;
       }
-      select {
-        padding: 5px;
-        padding: 3px 5px;
-        background-color: var(--button-background, #fff);
-        color: var(--button-color, var(--primary-color));
-        border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
-        border-radius: 2px;
-        font-size: 0.8rem;
-      }
+      
+      /* set the button and select border styles */
+        button, select {
+            border: 1px solid color-mix(in srgb, var(--button-border-color, #596570) 70%, transparent 0%);
+        }
+        /* Style the select element */
+
+select {
+  appearance: none; /* Remove default select styles */
+  -webkit-appearance: none; /* For Safari */
+  -moz-appearance: none; /* For Firefox */
+  background-color: var(--select-background, #fff);
+  color: var(--select-color, #334155);
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  border-radius: 2px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 50px; /* Set width to keep it consistent */
+  padding-right: 5px; /* Ensure space for dropdown arrow */
+  position: relative; /* Ensure the arrow is positioned correctly */
+}
+
+/* Remove default browser dropdown arrow */
+select::-ms-expand {
+  display: none;
+}
+select::-moz-focus-inner {
+  border: 0;
+}
+
+/* Add custom dropdown indicator using ::after pseudo-element */
+select::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid currentColor;
+}
+
+/* Ensure consistent focus outline */
+select:focus {
+  outline: none;
+  border-color: var(--focus-color, #2563eb);
+  box-shadow: 0 0 3px 1px var(--focus-color, #2563eb);
+}
+
+/* Style for disabled select */
+select:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+            
       @media (max-width: 600px) {
         .progress-time-container {
           flex-direction: column;
@@ -1278,45 +1317,7 @@ export class BespokenAudioPlayer extends HTMLElement {
 }
 
 
-/* Remove default browser styles */
-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  border: 1px solid var(--primary-color, #334155);
-  background-color: var(--select-background, #fff);
-  color: var(--select-color, #334155);
-  padding: 3px 8px;
-  font-size: 0.75rem;
-  border-radius: 2px;
-  cursor: pointer;
-  width: 100%;
-  max-width: 70px; /* Set width to keep it consistent */
-}
 
-/* Add custom dropdown indicator */
-select {
-  background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 6l4 4 4-4H4z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
-  padding-right: 30px; /* Ensure space for dropdown arrow */
-}
-
-/* Ensure consistent focus outline */
-select:focus {
-  outline: none;
-  border-color: var(--focus-color, #2563eb);
-  box-shadow: 0 0 3px 1px var(--focus-color, #2563eb);
-}
-
-/* Style for disabled select */
-select:disabled {
-  background-color: #f0f0f0;
-  color: #999;
-  cursor: not-allowed;
-  border-color: #ddd;
-}
 
     `;
         this.shadow.appendChild(style);
