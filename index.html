@@ -5,6 +5,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Module Demo Page</title>
+
+
   <!-- Script tag for demo page purposes in demo-page-assets/demo.ts  -->
   <script type="module" src="demo-page-assets/demo.ts"></script>
 
@@ -178,28 +180,7 @@
 </div>
 
 <script>
-  const player = document.getElementById('my-audio-player');
 
-  player.addEventListener('play', () => {
-    console.log('Event: play');
-  });
-
-  player.addEventListener('pause', () => {
-    console.log('Event: pause');
-  });
-
-  player.addEventListener('ended', () => {
-    console.log('Event: ended');
-  });
-
-  player.addEventListener('trackChange', (event) => {
-    console.log('Event: trackChange', event.detail);
-  });
-
-  player.addEventListener('error', (event) => {
-      const { code, message, mediaError, trackIndex } = event.detail;
-      console.error(`Error on track ${trackIndex}:`, message);
-    });
 </script>
 </body>
 
