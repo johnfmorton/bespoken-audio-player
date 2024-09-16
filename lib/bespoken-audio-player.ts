@@ -506,10 +506,31 @@ export class BespokenAudioPlayer extends HTMLElement {
     /**
      * Plays the current audio track
      */
-    private playAudio() {
+    private async playAudio() {
         // If no audio element, return
         if (!this.audio) return;
-        this.audio.play();
+
+        // Check if the audio source exists before playing
+        try {
+            const src = this.audio.src;
+
+            // If no source is set, return
+            if (!src) {
+                throw new Error('No audio source available.');
+            }
+
+            // Check if the audio file exists at the given source
+            const response = await fetch(src);
+            if (!response.ok) {
+                throw new Error(`Audio file not found: ${src}`);
+            }
+
+            // Try to play the audio
+            await this.audio.play();
+        } catch (error) {
+            console.error('Error playing audio:', error);
+            // alert('Unable to play the audio. Please check the file and try again.');
+        }
     }
 
     /**
@@ -587,13 +608,28 @@ export class BespokenAudioPlayer extends HTMLElement {
     /**
      * Loads the current track based on currentTrackIndex
      */
-    private loadCurrentTrack() {
+    private async loadCurrentTrack() {
         // If no audio element, return
         if (!this.audio) return;
         if (this.playlistData.length > 0) {
             const currentTrack = this.playlistData[this.currentTrackIndex];
-            this.audio.src = currentTrack.src;
-            this.audio.load();
+            // this.audio.src = currentTrack.src;
+            // this.audio.load();ß
+
+            try {
+                // Check if the audio source exists before setting it
+                const response = await fetch(currentTrack.src);
+                if (!response.ok) {
+                    throw new Error(`Audio file not found: ${currentTrack.src}`);
+                }
+
+                this.audio.src = currentTrack.src;
+                this.audio.load();  // Attempt to load the new track
+            } catch (error) {
+                console.error('Failed to load audio:', error);
+                alert('The audio file could not be loaded. Please check the file and try again.');
+                // return;  // Exit the function if the audio cannot be loaded
+            }
 
             // Apply the user's selected playback rate
             const rate = parseFloat(this.playbackRateSelect ? this.playbackRateSelect.value : '1');
@@ -648,7 +684,7 @@ export class BespokenAudioPlayer extends HTMLElement {
                     errorMessage = 'An error occurred while decoding the audio. The file may be corrupt or in an unsupported format.';
                     break;
                 case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    errorMessage = 'The audio format is not supported or the file was not found (404 error).';
+                    errorMessage = 'Error: The file was not found or the audio format is not supported.';
                     break;
                 default:
                     errorMessage = 'An unknown error occurred while loading the audio.';
