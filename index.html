@@ -11,19 +11,21 @@
   <style>
       .customized bespoken-audio-player {
           --button-background: #237782;
-          --button-color: #fff;
-          --primary-color: #673ab7;
+          --button-color: #00f;
+          --button-border-color: #403b3b;
+          --primary-color: #3ec635;
           --progress-bar-background: #cdcc53;
           --progress-bar-fill: #ff5722;
           --progress-bar-thumb: #1acf74;
-
+          --select-background: #673ab7;
+          --select-color: #fff;
       }
 
       /* Style the play/pause button */
       .customized bespoken-audio-player::part(play-button) {
           background-color: #673ab7;
           color: #fff;
-          border-radius: 10%;
+          border-radius: 3px;
       }
 
       /* Style the previous and next buttons */
@@ -31,7 +33,11 @@
       .customized bespoken-audio-player::part(next-button) {
           background-color: #673ab7;
           color: #fff;
-          border-radius: 10%;
+          border-radius: 5px 0 0 5px;
+      }
+
+      .customized bespoken-audio-player::part(next-button) {
+          border-radius: 0 5px 5px 0;
       }
 
       /* Style the time display */
@@ -67,11 +73,11 @@
       <pre class="text-xs text-yellow-100 whitespace-pre-wrap">
 &lt;bespoken-audio-player
     class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
-    tracks='[{"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"}]'
+    tracks='[{"src": "hello-america-audio-20240913-063213.mp3"}]'
     >
 &lt;/bespoken-audio-player></pre>
 
-      <bespoken-audio-player data-class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5" tracks='[{"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"}]'></bespoken-audio-player>
+      <bespoken-audio-player data-class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5" tracks='[{"src": "hello-america-audio-20240913-063213.mp3"}]'></bespoken-audio-player>
 
 
       <h2>Example 2:</h2>
@@ -85,18 +91,18 @@
 &lt;bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
     only-current-track-visible
     tracks='[
-      {"src": "demo-page-assets/fish-and-chips.mp3", "title": "Introduction"},
-      {"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"},
-      {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
+      {"src": "fish-and-chips.mp3", "title": "Introduction"},
+      {"src": "hello-america-audio-20240913-063213.mp3"},
+      {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
     ]'
     >
 &lt;/bespoken-audio-player></pre>
 
       <bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
                              only-current-track-visible x-playlist-visible tracks='[
-        {"src": "demo-page-assets/test.mp3", "title": "Hello from an API"},
-        {"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"},
-        {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
+        {"src": "test.mp3", "title": "Hello from an API"},
+        {"src": "hello-america-audio-20240913-063213.mp3"},
+        {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
       ]'></bespoken-audio-player>
 
       <h2>Example 3: changing colors, showing the playlist</h2>
@@ -105,10 +111,11 @@
         <bespoken-audio-player id="my-audio-player"
                                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
                                playlist-visible tracks='[
-      {"src": "demo-page-assets/tests.mp3", "title": "Hello from an API"},
-      {"src": "demo-page-assets/hello-america-audio-20240913-063213ERROR.mp3"},
-      {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
-    ]'>
+                               {"src": "test.mp3", "title": "This is a test file"},
+                                {"src": "MISSING-FILE.mp3", "title": "This file is missing."},
+                                {"src": "MISSING-FILE.mp3"},
+                                {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
+                              ]'>
           <!-- Custom Play Icon -->
           <svg slot="play-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
             <path fill="currentColor" d="M9.51,6.19v12.31l8.72-6.16-8.72-6.16Z"/>
@@ -137,9 +144,10 @@
       <pre class="text-xs text-yellow-100">
 &lt;bespoken-audio-player id="my-audio-player" class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
   playlist-visible tracks='[
-    {"src": "demo-page-assets/fish-and-chips.mp3", "title": "Introduction"},
-    {"src": "demo-page-assets/hello-america-audio-20240913-063213.mp3"},
-    {"src": "demo-page-assets/hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
+    {"src": "test.mp3", "title": "This is a test file"},
+    {"src": "MISSING-FILE.mp3", "title": "This file is missing."},
+    {"src": "MISSING-FILE.mp3"},
+    {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
   ]'>
   &lt;!-- Custom Play Icon -->
   &lt;svg slot="play-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">

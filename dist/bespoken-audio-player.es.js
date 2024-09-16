@@ -4,14 +4,11 @@
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-15T14:22:46.044Z 
+ * build date: 2024-09-16T15:52:23.965Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 class BespokenAudioPlayer extends HTMLElement {
   constructor() {
     super();
@@ -42,6 +39,8 @@ class BespokenAudioPlayer extends HTMLElement {
     __publicField(this, "isOnlyCurrentTrackVisible");
     // Keyboard shortcuts map
     __publicField(this, "keyboardShortcuts");
+    // Add to your class properties
+    __publicField(this, "trackErrorStates", []);
     this.shadow = this.attachShadow({ mode: "open" });
     this.playlistData = [];
     this.currentTrackIndex = 0;
@@ -102,6 +101,7 @@ class BespokenAudioPlayer extends HTMLElement {
    */
   parseTracksAttribute() {
     const tracksAttr = this.getAttribute("tracks");
+    this.trackErrorStates = new Array(this.playlistData.length).fill(false);
     if (tracksAttr) {
       try {
         const tracks = JSON.parse(tracksAttr);
@@ -331,8 +331,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * Attaches event listeners for media events
    */
   attachEventListeners() {
-    if (!this.audio)
-      return;
+    if (!this.audio) return;
     this.audio.addEventListener("error", () => this.handleMediaError());
     this.audio.addEventListener("timeupdate", () => {
       this.updateProgressBar();
@@ -391,8 +390,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * Toggles between play and pause states
    */
   togglePlayPause() {
-    if (!this.audio)
-      return;
+    if (!this.audio) return;
     if (this.audio.paused) {
       this.playAudio();
     } else {
@@ -403,24 +401,21 @@ class BespokenAudioPlayer extends HTMLElement {
    * Plays the current audio track
    */
   playAudio() {
-    if (!this.audio)
-      return;
+    if (!this.audio) return;
     this.audio.play();
   }
   /**
    * Pauses the current audio track
    */
   pauseAudio() {
-    if (!this.audio)
-      return;
+    if (!this.audio) return;
     this.audio.pause();
   }
   /**
    * Updates the play/pause button based on playback state
    */
   updatePlayPauseButton() {
-    if (!this.playPauseButton)
-      return;
+    if (!this.playPauseButton) return;
     const playIconSlot = this.playPauseButton.querySelector('slot[name="play-icon"]');
     const pauseIconSlot = this.playPauseButton.querySelector('slot[name="pause-icon"]');
     if (this.audio && this.audio.paused) {
@@ -441,12 +436,10 @@ class BespokenAudioPlayer extends HTMLElement {
    */
   nextTrack() {
     if (this.playlistData.length > 1) {
-      if (this.currentTrackIndex < this.playlistData.length - 1) {
-        this.currentTrackIndex++;
-        this.loadCurrentTrack();
-      } else if (this.isLoopEnabled) {
-        this.currentTrackIndex = 0;
-        this.loadCurrentTrack();
+      if (this.hasNextAvailableTrack()) {
+        this.nextAvailableTrack();
+      } else {
+        console.warn("No next available tracks to play.");
       }
     }
   }
@@ -455,12 +448,10 @@ class BespokenAudioPlayer extends HTMLElement {
    */
   prevTrack() {
     if (this.playlistData.length > 1) {
-      if (this.currentTrackIndex > 0) {
-        this.currentTrackIndex--;
-        this.loadCurrentTrack();
-      } else if (this.isLoopEnabled) {
-        this.currentTrackIndex = this.playlistData.length - 1;
-        this.loadCurrentTrack();
+      if (this.hasPrevAvailableTrack()) {
+        this.prevAvailableTrack();
+      } else {
+        console.warn("No previous available tracks to play.");
       }
     }
   }
@@ -468,8 +459,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * Adjusts the playback rate based on the select control
    */
   adjustPlaybackRate() {
-    if (!this.audio || !this.playbackRateSelect)
-      return;
+    if (!this.audio || !this.playbackRateSelect) return;
     const rate = parseFloat(this.playbackRateSelect.value);
     this.audio.playbackRate = rate;
   }
@@ -477,8 +467,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * Loads the current track based on currentTrackIndex
    */
   loadCurrentTrack() {
-    if (!this.audio)
-      return;
+    if (!this.audio) return;
     if (this.playlistData.length > 0) {
       const currentTrack = this.playlistData[this.currentTrackIndex];
       this.audio.src = currentTrack.src;
@@ -504,21 +493,66 @@ class BespokenAudioPlayer extends HTMLElement {
     }
   }
   /**
-   * Handles media errors and provides fallback content
+   * Handles media errors and provides detailed error messages
    */
   handleMediaError() {
-    console.error("An error occurred while attempting to load the audio.");
+    var _a;
+    const error = (_a = this.audio) == null ? void 0 : _a.error;
+    let errorMessage = "An unknown error occurred while loading the audio.";
+    let errorCode = 0;
+    if (error) {
+      switch (error.code) {
+        case MediaError.MEDIA_ERR_ABORTED:
+          errorMessage = "Playback was aborted by the user.";
+          break;
+        case MediaError.MEDIA_ERR_NETWORK:
+          errorMessage = "A network error prevented the audio from loading. Please check your internet connection.";
+          break;
+        case MediaError.MEDIA_ERR_DECODE:
+          errorMessage = "An error occurred while decoding the audio. The file may be corrupt or in an unsupported format.";
+          break;
+        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMessage = "The audio format is not supported or the file was not found (404 error).";
+          break;
+        default:
+          errorMessage = "An unknown error occurred while loading the audio.";
+          break;
+      }
+    }
+    this.dispatchEvent(
+      new CustomEvent("error", {
+        detail: {
+          code: errorCode,
+          message: errorMessage,
+          mediaError: error,
+          trackIndex: this.currentTrackIndex,
+          track: this.playlistData[this.currentTrackIndex]
+        }
+      })
+    );
+    this.trackErrorStates[this.currentTrackIndex] = true;
+    this.updatePlaylistUI();
+    if (this.hasNextAvailableTrack()) {
+      this.nextAvailableTrack();
+      this.playAudio();
+    } else {
+      this.updateControlsState(false);
+      console.warn("No available tracks to play.");
+    }
     const errorContainer = document.createElement("div");
-    errorContainer.textContent = "The audio cannot be played at this time.";
+    errorContainer.setAttribute("class", "error-message");
+    errorContainer.textContent = errorMessage;
+    const existingError = this.shadow.querySelector(".error-message");
+    if (existingError) {
+      this.shadow.removeChild(existingError);
+    }
     this.shadow.appendChild(errorContainer);
-    this.updateControlsState(false);
   }
   /**
    * Updates the progress bar as the audio plays
    */
   updateProgressBar() {
-    if (!this.progressBar)
-      return;
+    if (!this.progressBar) return;
     if (this.audio && this.audio.duration > 0) {
       const value = this.audio.currentTime / this.audio.duration * 100;
       this.progressBar.value = value.toString();
@@ -541,8 +575,7 @@ class BespokenAudioPlayer extends HTMLElement {
     const duration = this.audio ? this.audio.duration : 0;
     const formattedCurrentTime = this.formatTime(currentTime);
     const formattedDuration = this.formatTime(duration);
-    if (!this.timeDisplay)
-      return;
+    if (!this.timeDisplay) return;
     this.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
   }
   /**
@@ -567,8 +600,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * Handles user seeking via the progress bar
    */
   onSeek() {
-    if (!this.audio || !this.progressBar)
-      return;
+    if (!this.audio || !this.progressBar) return;
     if (this.audio.duration > 0) {
       const seekTime = parseFloat(this.progressBar.value) / 100 * this.audio.duration;
       this.audio.currentTime = seekTime;
@@ -591,12 +623,10 @@ class BespokenAudioPlayer extends HTMLElement {
    * Steps back the progress bar by a small amount
    */
   stepBack() {
-    if (!this.progressBar)
-      return;
+    if (!this.progressBar) return;
     const step = parseFloat(this.progressBar.step);
     let value = parseFloat(this.progressBar.value) - step;
-    if (value < 0)
-      value = 0;
+    if (value < 0) value = 0;
     this.progressBar.value = value.toString();
     this.onSeek();
   }
@@ -604,12 +634,10 @@ class BespokenAudioPlayer extends HTMLElement {
    * Steps forward the progress bar by a small amount
    */
   stepForward() {
-    if (!this.progressBar)
-      return;
+    if (!this.progressBar) return;
     const step = parseFloat(this.progressBar.step);
     let value = parseFloat(this.progressBar.value) + step;
-    if (value > 100)
-      value = 100;
+    if (value > 100) value = 100;
     this.progressBar.value = value.toString();
     this.onSeek();
   }
@@ -638,8 +666,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * Creates or updates the playlist UI
    */
   updatePlaylistUI() {
-    if (!this.playlistContainer)
-      return;
+    if (!this.playlistContainer) return;
     while (this.playlistContainer.firstChild) {
       this.playlistContainer.removeChild(this.playlistContainer.firstChild);
     }
@@ -661,6 +688,8 @@ class BespokenAudioPlayer extends HTMLElement {
           const trackButton = document.createElement("button");
           const trackTitle = track.title || this.extractFileName(track.src);
           trackButton.setAttribute("aria-label", `Play ${trackTitle}`);
+          const isTrackError = this.trackErrorStates[actualIndex];
+          trackButton.disabled = isTrackError;
           const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           iconSvg.setAttribute("width", "16");
           iconSvg.setAttribute("height", "16");
@@ -668,7 +697,9 @@ class BespokenAudioPlayer extends HTMLElement {
           const useElement = document.createElementNS("http://www.w3.org/2000/svg", "use");
           useElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", "");
           iconSvg.appendChild(useElement);
-          if (this.currentTrackIndex === actualIndex) {
+          if (isTrackError) {
+            useElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#error-icon");
+          } else if (this.currentTrackIndex === actualIndex) {
             trackButton.classList.add("current-track");
             trackButton.setAttribute("aria-current", "true");
             if (this.audio && this.audio.paused) {
@@ -717,14 +748,61 @@ class BespokenAudioPlayer extends HTMLElement {
    * Updates the visibility of the playlist UI
    */
   updatePlaylistVisibility() {
-    if (!this.playlistContainer)
-      return;
+    if (!this.playlistContainer) return;
     if (this.isPlaylistVisible || this.isOnlyCurrentTrackVisible) {
       this.playlistContainer.style.display = "block";
       this.updatePlaylistUI();
     } else {
       this.playlistContainer.style.display = "none";
     }
+  }
+  hasNextAvailableTrack() {
+    const totalTracks = this.playlistData.length;
+    let nextIndex = this.currentTrackIndex;
+    for (let i = 1; i < totalTracks; i++) {
+      nextIndex = (this.currentTrackIndex + i) % totalTracks;
+      if (!this.trackErrorStates[nextIndex]) {
+        return true;
+      }
+    }
+    return false;
+  }
+  hasPrevAvailableTrack() {
+    const totalTracks = this.playlistData.length;
+    let prevIndex = this.currentTrackIndex;
+    for (let i = 1; i < totalTracks; i++) {
+      prevIndex = (this.currentTrackIndex - i + totalTracks) % totalTracks;
+      if (!this.trackErrorStates[prevIndex]) {
+        return true;
+      }
+    }
+    return false;
+  }
+  nextAvailableTrack() {
+    const totalTracks = this.playlistData.length;
+    let nextIndex = this.currentTrackIndex;
+    do {
+      nextIndex = (nextIndex + 1) % totalTracks;
+      if (!this.trackErrorStates[nextIndex]) {
+        this.currentTrackIndex = nextIndex;
+        this.loadCurrentTrack();
+        return;
+      }
+    } while (nextIndex !== this.currentTrackIndex);
+    console.warn("No available tracks to play.");
+  }
+  prevAvailableTrack() {
+    const totalTracks = this.playlistData.length;
+    let prevIndex = this.currentTrackIndex;
+    do {
+      prevIndex = (prevIndex - 1 + totalTracks) % totalTracks;
+      if (!this.trackErrorStates[prevIndex]) {
+        this.currentTrackIndex = prevIndex;
+        this.loadCurrentTrack();
+        return;
+      }
+    } while (prevIndex !== this.currentTrackIndex);
+    console.warn("No available tracks to play.");
   }
   /**
    * Renders the component's HTML structure and styles
@@ -744,7 +822,14 @@ class BespokenAudioPlayer extends HTMLElement {
       <symbol id="bullet-icon" viewBox="0 0 16 16">
         <circle cx="8" cy="8" r="4" fill="currentColor"/>
       </symbol>
-    `;
+      <symbol id="error-icon" viewBox="0 0 16 16">
+          <!-- Circle -->
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
+          <!-- Exclamation Mark -->
+          <rect x="7" y="3.25" width="2" height="5.5" fill="currentColor"/>
+          <circle cx="8" cy="11" r="1.5" fill="currentColor"/>
+        </symbol>
+      `;
     this.shadow.appendChild(svgDefs);
     const style = document.createElement("style");
     style.textContent = `
@@ -821,18 +906,6 @@ class BespokenAudioPlayer extends HTMLElement {
   background-color: transparent;
 }
 
-// .playlist-container button.current-track.playing::before {
-//   content: '⏸︎ '; /* Pause symbol */
-// }
-
-// .playlist-container button.current-track.paused::before {
-//   content: '▶︎ '; /* Play symbol */
-// }
-
-// .playlist-container button:not(.current-track)::before {
-//   content: '• '; /* Bullet point */
-// }
-
 /* end of TODO */
 
       .progress-time-container {
@@ -858,24 +931,75 @@ class BespokenAudioPlayer extends HTMLElement {
         margin-top: 10px;
         align-items: center;
       }
+      
       button {
         padding: 3px 5px;
         font-size: 0.8rem;
         background-color: var(--button-background, #fff);
         color: var(--button-color, var(--primary-color));
-        border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
+        
         border-radius: 2px;
         cursor: pointer;
       }
-      select {
-        padding: 5px;
-        padding: 3px 5px;
-        background-color: var(--button-background, #fff);
-        color: var(--button-color, var(--primary-color));
-        border: 1px solid color-mix(in srgb, var(--primary-color) 70%, transparent 0%);
-        border-radius: 2px;
-        font-size: 0.8rem;
-      }
+      
+      /* set the button and select border styles */
+        button, select {
+            border: 1px solid color-mix(in srgb, var(--button-border-color, #596570) 70%, transparent 0%);
+        }
+        /* Style the select element */
+
+select {
+  appearance: none; /* Remove default select styles */
+  -webkit-appearance: none; /* For Safari */
+  -moz-appearance: none; /* For Firefox */
+  background-color: var(--select-background, #fff);
+  color: var(--select-color, #334155);
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  border-radius: 2px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 50px; /* Set width to keep it consistent */
+  padding-right: 5px; /* Ensure space for dropdown arrow */
+  position: relative; /* Ensure the arrow is positioned correctly */
+}
+
+/* Remove default browser dropdown arrow */
+select::-ms-expand {
+  display: none;
+}
+select::-moz-focus-inner {
+  border: 0;
+}
+
+/* Add custom dropdown indicator using ::after pseudo-element */
+select::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid currentColor;
+}
+
+/* Ensure consistent focus outline */
+select:focus {
+  outline: none;
+  border-color: var(--focus-color, #2563eb);
+  box-shadow: 0 0 3px 1px var(--focus-color, #2563eb);
+}
+
+/* Style for disabled select */
+select:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+            
       @media (max-width: 600px) {
         .progress-time-container {
           flex-direction: column;
@@ -938,6 +1062,30 @@ class BespokenAudioPlayer extends HTMLElement {
         background-color: var(--progress-bar-background);
         border-radius: 5px;
       }
+
+
+/* Style for disabled buttons */
+.playlist-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: gray; /* Optional: Change text color */
+}
+
+/* Optionally, add an error icon */
+.playlist-container button:disabled svg use {
+  href: '#error-icon'; /* Reference an error icon */
+}
+
+/* Error Message Styles */
+.error-message {
+  color: #ca3a31;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+
+
+
     `;
     this.shadow.appendChild(style);
     if (this.playlistData.length > 0) {
@@ -953,6 +1101,8 @@ class BespokenAudioPlayer extends HTMLElement {
    */
   set tracks(value) {
     if (Array.isArray(value)) {
+      this.playlistData = value.filter((track) => typeof track.src === "string");
+      this.trackErrorStates = new Array(this.playlistData.length).fill(false);
       this.playlistData = value.filter((track) => typeof track.src === "string");
       if (this.playlistData.length === 0) {
         console.error('The "tracks" property must contain at least one valid track with a "src" property.');

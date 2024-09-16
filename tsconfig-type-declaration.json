@@ -3,17 +3,19 @@
     "target": "es6",
     "useDefineForClassFields": true,
     "module": "es6",
-    "lib": ["es6", "DOM"], // Changed to es2015 for clarity
+    "lib": ["es6", "DOM"],
     "moduleResolution": "Node",
     "strict": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "esModuleInterop": true,
     "noEmit": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "declaration": true,
+    "emitDeclarationOnly": true, // Emit only declarations
+    "outFile": "dist/bespoken-audio-player.d.ts" // Output declaration file
   },
-  "include": ["src"]
+  "include": ["lib/bespoken-audio-player.ts"] // Include the specific file
 }

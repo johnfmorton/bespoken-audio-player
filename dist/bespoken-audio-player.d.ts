@@ -16,6 +16,7 @@ declare module "bespoken-audio-player" {
         private isLoopEnabled;
         private isOnlyCurrentTrackVisible;
         private keyboardShortcuts;
+        private trackErrorStates;
         constructor();
         /**
          * Specifies the observed attributes so that
@@ -124,7 +125,7 @@ declare module "bespoken-audio-player" {
          */
         private loadCurrentTrack;
         /**
-         * Handles media errors and provides fallback content
+         * Handles media errors and provides detailed error messages
          */
         private handleMediaError;
         /**
@@ -176,6 +177,10 @@ declare module "bespoken-audio-player" {
          * Updates the visibility of the playlist UI
          */
         private updatePlaylistVisibility;
+        private hasNextAvailableTrack;
+        private hasPrevAvailableTrack;
+        private nextAvailableTrack;
+        private prevAvailableTrack;
         /**
          * Renders the component's HTML structure and styles
          */
