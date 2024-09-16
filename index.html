@@ -11,7 +11,7 @@
   <script type="module" src="demo-page-assets/demo.ts"></script>
 
   <style>
-      .customized bespoken-audio-player {
+      bespoken-audio-player#my-audio-player {
           --button-background: #237782;
           --button-color: #00f;
           --button-border-color: #403b3b;
@@ -24,26 +24,26 @@
       }
 
       /* Style the play/pause button */
-      .customized bespoken-audio-player::part(play-button) {
+      bespoken-audio-player#my-audio-player::part(play-button) {
           background-color: #673ab7;
           color: #fff;
           border-radius: 3px;
       }
 
       /* Style the previous and next buttons */
-      .customized bespoken-audio-player::part(prev-button),
-      .customized bespoken-audio-player::part(next-button) {
+      bespoken-audio-player#my-audio-player::part(prev-button),
+      bespoken-audio-player#my-audio-player::part(next-button) {
           background-color: #673ab7;
           color: #fff;
           border-radius: 5px 0 0 5px;
       }
 
-      .customized bespoken-audio-player::part(next-button) {
+      bespoken-audio-player#my-audio-player::part(next-button) {
           border-radius: 0 5px 5px 0;
       }
 
       /* Style the time display */
-      .customized bespoken-audio-player::part(time-display) {
+      bespoken-audio-player#my-audio-player::part(time-display) {
           color: #c41d7e;
           font-weight: bold;
           border: 1px solid #673ab7;
@@ -93,15 +93,15 @@
 &lt;bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
     only-current-track-visible
     tracks='[
-      {"src": "fish-and-chips.mp3", "title": "Introduction"},
-      {"src": "hello-america-audio-20240913-063213.mp3"},
+      {"src": "test.mp3", "title": "Introduction"},
+      {"src": "test.mp3"},
       {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
     ]'
     >
 &lt;/bespoken-audio-player></pre>
 
       <bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
-                             only-current-track-visible x-playlist-visible tracks='[
+                             playlist-visible x-playlist-visible tracks='[
         {"src": "test.mp3", "title": "Hello from an API"},
         {"src": "hello-america-audio-20240913-063213.mp3"},
         {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}

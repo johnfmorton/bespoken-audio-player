@@ -5,6 +5,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Module Demo Page</title>
+
+
   <!-- Script tag for demo page purposes in demo-page-assets/demo.ts  -->
   <script type="module" src="demo-page-assets/demo.ts"></script>
 
@@ -15,52 +17,53 @@
 <div class="bg-slate-50 py-10 min-h-screen prose max-w-full">
   <div class="mx-auto max-w-screen-lg p-6 lg:p-8 bg-gradient-to-br from-white to-slate-200 rounded shadow-2xl">
     <div class="mx-auto lg:mx-0">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">Demo: Bespoken Audio Player</h1>
+      <div class="customized">
+        <bespoken-audio-player id="my-audio-player"
+           class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
+           playlist-visible tracks='[
+           {"src": "etest.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
+            {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
+            {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
+          ]'>
+          <!-- Custom Play Icon -->
+          <svg slot="play-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M9.51,6.19v12.31l8.72-6.16-8.72-6.16Z"/>
+          </svg>
+          <!-- Custom Pause Icon -->
+          <svg slot="pause-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+               fill="currentColor">
+            <rect x="7.31" y="6.85" width="3.69" height="11"/>
+            <rect x="13.93" y="6.85" width="3.69" height="11"/>
+          </svg>
 
-      <p>
-        The `bespoken-audio-player` element is a custom element that allows you to play audio files in a playlist. The
-        element is built using the Web Components API and is compatible with all modern browsers.
-      </p>
+          <!-- Custom Previous Icon -->
+          <svg slot="prev-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M8.72,18.5V6.19L0,12.35l8.72,6.16ZM19.49,18.5V6.19l-8.72,6.16,8.72,6.16Z"/>
+          </svg>
 
-      <h2>Example 1: Single track</h2>
-      <p>
-        In this first example, the `bespoken-audio-player` element is used to play a single audio file.
-      </p>
+          <!-- Custom Next Icon -->
+          <svg slot="next-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M15.28,6.19v12.31l8.72-6.16-8.72-6.16ZM4.51,6.19v12.31l8.72-6.16L4.51,6.19Z"/>
+          </svg>
 
-      <pre class="text-xs text-yellow-100 whitespace-pre-wrap">
-&lt;bespoken-audio-player
-    class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
-    tracks='[{"src": "test.mp3"}]'
-    >
-&lt;/bespoken-audio-player></pre>
-      <bespoken-audio-player data-class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5" tracks='[{"src": "test.mp3"}]'></bespoken-audio-player>
+        </bespoken-audio-player>
+
+      </div>
+
+
+
     </div>
   </div>
 </div>
 
 <script>
-  const player = document.getElementById('my-audio-player');
 
-  player.addEventListener('play', () => {
-    console.log('Event: play');
-  });
-
-  player.addEventListener('pause', () => {
-    console.log('Event: pause');
-  });
-
-  player.addEventListener('ended', () => {
-    console.log('Event: ended');
-  });
-
-  player.addEventListener('trackChange', (event) => {
-    console.log('Event: trackChange', event.detail);
-  });
-
-  player.addEventListener('error', (event) => {
-      const { code, message, mediaError, trackIndex } = event.detail;
-      console.error(`Error on track ${trackIndex}:`, message);
-    });
 </script>
 </body>
 

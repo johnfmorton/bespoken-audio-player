@@ -5,6 +5,7 @@ import './style.pcss';
 
 import Notify from 'simple-notify'
 import 'simple-notify/dist/simple-notify.css'
+// @ts-ignore
 import type { NotifyStatus } from 'simple-notify/dist/simple-notify'
 
 
@@ -41,10 +42,10 @@ const player = document.getElementById('my-audio-player');
   player?.addEventListener('trackChange', (event) => {
     console.log('Event: trackChange', event.detail);
 
-      let eventDetail = !(event.detail) ? null : event.detail
+      let currentTrackIndex = !(event.detail.currentTrackIndex) ? null : event.detail.currentTrackIndex
       sendNotification({
             title: 'Track Change event',
-            text: `from #my-audio-player to track ${eventDetail.track.title || eventDetail.track.src || 'unknown'}`,
+            text: `from #my-audio-player to track ${Number(currentTrackIndex)}`,
       })
   });
 

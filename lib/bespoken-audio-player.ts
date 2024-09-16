@@ -2,6 +2,9 @@ export class BespokenAudioPlayer extends HTMLElement {
     // Shadow DOM root
     private shadow: ShadowRoot;
 
+    // Container for all player elements
+    private playerContainer: HTMLDivElement | undefined;
+
     // Audio element
     private audio: HTMLAudioElement | undefined;
 
@@ -18,7 +21,7 @@ export class BespokenAudioPlayer extends HTMLElement {
     private playbackRateSelect: HTMLSelectElement | null | undefined;
 
     // Progress bar elements
-    private progressTimeContainer: HTMLElement | undefined; // Container for progress bar and time display
+    private controlsProgressTimeContainer: HTMLElement | undefined; // Container for progress bar and time display
     private progressBar: HTMLInputElement | undefined;
 
     // Time display element
@@ -52,10 +55,13 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.isOnlyCurrentTrackVisible = false;
 
         // Call initialization methods
+
+        //
+        this.createPlayerContainer(); // Create container for all player elements
         this.createAudioElement();
         this.createPlaylist(); // Create playlist UI
-        this.createProgressAndTimeContainer(); // Create container for progress bar and time display
-        this.createControls();
+        this.createControlsProgressAndTimeContainer(); // Create container for progress bar and time display
+
         this.attachEventListeners();
         this.setupKeyboardShortcuts();
     }
@@ -132,7 +138,9 @@ export class BespokenAudioPlayer extends HTMLElement {
                     if (this.playlistData.length === 0) {
                         console.error('The "tracks" attribute must contain at least one valid track with a "src" property.');
                         this.updateControlsState(false);
+                        this.hidePlayer(true);
                     } else {
+                        this.hidePlayer(false);
                         this.currentTrackIndex = 0;
                         this.loadCurrentTrack();
                         this.updatePlaylistUI();
@@ -142,15 +150,36 @@ export class BespokenAudioPlayer extends HTMLElement {
                 } else {
                     console.error('Invalid "tracks" attribute format. Expected a JSON array.');
                     this.updateControlsState(false);
+                    this.hidePlayer(true);
                 }
             } catch (e) {
                 console.error('Failed to parse "tracks" attribute as JSON.', e);
                 this.updateControlsState(false);
+                this.hidePlayer(true);
             }
         } else {
             console.error('The "tracks" attribute is required and must be a valid JSON array.');
             this.updateControlsState(false);
+            this.hidePlayer(true);
         }
+    }
+
+    private hidePlayer(hide: boolean) {
+        // TODO: Hide the player
+        if (hide) {
+            this.playerContainer?.classList.add('hidden');
+        } else {
+            this.playerContainer?.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Create a container for all the player elements
+     */
+    private createPlayerContainer() {
+        this.playerContainer = document.createElement('div');
+        this.playerContainer.setAttribute('class', 'player-container');
+        this.shadow.appendChild(this.playerContainer);
     }
 
     /**
@@ -160,7 +189,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.audio = document.createElement('audio');
         this.audio.setAttribute('aria-hidden', 'true'); // Hide from screen readers
         this.audio.preload = 'metadata'; // Ensure metadata is loaded but do not autoplay
-        this.shadow.appendChild(this.audio);
+        this.playerContainer?.appendChild(this.audio);
     }
 
     /**
@@ -169,16 +198,19 @@ export class BespokenAudioPlayer extends HTMLElement {
     private createPlaylist() {
         this.playlistContainer = document.createElement('div');
         this.playlistContainer.setAttribute('class', 'playlist-container');
-        this.shadow.appendChild(this.playlistContainer);
+        this.playerContainer?.appendChild(this.playlistContainer);
     }
 
     /**
      * Creates the container for progress bar and time display
      */
-    private createProgressAndTimeContainer() {
+    private createControlsProgressAndTimeContainer() {
         // Create a container for progress bar and time display
-        this.progressTimeContainer = document.createElement('div');
-        this.progressTimeContainer.setAttribute('class', 'progress-time-container');
+        this.controlsProgressTimeContainer = document.createElement('div');
+        this.controlsProgressTimeContainer.setAttribute('class', 'controls-progress-time-container');
+
+        // Create the controls
+        this.createControls();
 
         // Create the progress bar
         this.createProgressBar();
@@ -187,7 +219,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.createTimeDisplay();
 
         // Append the container to the shadow DOM
-        this.shadow.appendChild(this.progressTimeContainer);
+        this.playerContainer?.appendChild(this.controlsProgressTimeContainer);
     }
 
     /**
@@ -225,7 +257,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         progressContainer.appendChild(this.progressBar);
 
         // Append the progress container to the progress-time container
-        this.progressTimeContainer?.appendChild(progressContainer);
+        this.controlsProgressTimeContainer?.appendChild(progressContainer);
     }
 
     /**
@@ -239,7 +271,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.timeDisplay.textContent = '0:00/0:00';
 
         // Append the time display to the progress-time container
-        this.progressTimeContainer?.appendChild(this.timeDisplay);
+        this.controlsProgressTimeContainer?.appendChild(this.timeDisplay);
     }
 
     /**
@@ -339,7 +371,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         controlsContainer.appendChild(this.playbackRateSelect);
 
         // Append controls to shadow DOM
-        this.shadow.appendChild(controlsContainer);
+        this.controlsProgressTimeContainer?.appendChild(controlsContainer);
     }
 
     /**
@@ -575,6 +607,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             if (this.hasNextAvailableTrack()) {
                 this.nextAvailableTrack();
                 // Do not autoplay; wait for user to initiate playback
+                this.dispatchTrackChangeEvent(this.currentTrackIndex);
             } else {
                 console.warn('No next available tracks to play.');
             }
@@ -589,6 +622,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             if (this.hasPrevAvailableTrack()) {
                 this.prevAvailableTrack();
                 // Do not autoplay; wait for user to initiate playback
+                this.dispatchTrackChangeEvent(this.currentTrackIndex);
             } else {
                 console.warn('No previous available tracks to play.');
             }
@@ -613,8 +647,6 @@ export class BespokenAudioPlayer extends HTMLElement {
         if (!this.audio) return;
         if (this.playlistData.length > 0) {
             const currentTrack = this.playlistData[this.currentTrackIndex];
-            // this.audio.src = currentTrack.src;
-            // this.audio.load();ß
 
             try {
                 // Check if the audio source exists before setting it
@@ -628,7 +660,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             } catch (error) {
                 console.error('Failed to load audio:', error);
                 alert('The audio file could not be loaded. Please check the file and try again.');
-                // return;  // Exit the function if the audio cannot be loaded
+                // return;  // Exit the function if the audio cannot be loaded <-- Commented out to continue playing other tracks
             }
 
             // Apply the user's selected playback rate
@@ -649,14 +681,6 @@ export class BespokenAudioPlayer extends HTMLElement {
 
             // Reset time display
             this.updateTimeDisplay();
-
-            // Dispatch the 'trackChange' event
-            this.dispatchEvent(new CustomEvent('trackChange', {
-                detail: {
-                    currentTrackIndex: this.currentTrackIndex,
-                    track: currentTrack,
-                },
-            }));
 
         } else {
             this.audio.removeAttribute('src');
@@ -860,6 +884,7 @@ export class BespokenAudioPlayer extends HTMLElement {
                 this.currentTrackIndex++;
                 this.loadCurrentTrack();
                 this.playAudio(); // Automatically play the next track
+                this.dispatchTrackChangeEvent(this.currentTrackIndex);
             } else if (this.isLoopEnabled) {
                 // Loop back to the first track
                 this.currentTrackIndex = 0;
@@ -1070,6 +1095,15 @@ export class BespokenAudioPlayer extends HTMLElement {
         console.warn('No available tracks to play.');
     }
 
+    private dispatchTrackChangeEvent(currentTrackIndex: number = 0) {
+        this.dispatchEvent(new CustomEvent('trackChange', {
+            detail: {
+                currentTrackIndex: currentTrackIndex ?? 0,
+                track: this.playlistData[currentTrackIndex ?? 0],
+            },
+        }));
+    }
+
     /**
      * Renders the component's HTML structure and styles
      */
@@ -1108,6 +1142,9 @@ export class BespokenAudioPlayer extends HTMLElement {
         --progress-bar-background: #ccc;
         --progress-bar-fill: var(--primary-color);
         --progress-bar-thumb: var(--primary-color);
+      }
+      .player-container.hidden {
+        display: none;
       }
       .playlist-container {
         margin-bottom: 10px;
@@ -1177,8 +1214,9 @@ export class BespokenAudioPlayer extends HTMLElement {
 
 /* end of TODO */
 
-      .progress-time-container {
+      .controls-progress-time-container {
         display: flex;
+        gap: 5px;
         flex-direction: row;
         align-items: center;
       }
@@ -1191,8 +1229,8 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
       .time-display {
         font-size: 0.8em;
-        margin-left: 10px;
         flex-shrink: 0;
+        margin-left: 5px;
       }
       div[role="group"] {
         display: flex;
@@ -1227,8 +1265,7 @@ select {
   font-size: 0.8rem;
   border-radius: 2px;
   cursor: pointer;
-  width: 100%;
-  max-width: 50px; /* Set width to keep it consistent */
+  
   padding-right: 5px; /* Ensure space for dropdown arrow */
   position: relative; /* Ensure the arrow is positioned correctly */
 }
@@ -1270,7 +1307,7 @@ select:disabled {
 }
             
       @media (max-width: 600px) {
-        .progress-time-container {
+        .controls-progress-time-container {
           flex-direction: column;
           align-items: center;
         }
@@ -1351,10 +1388,6 @@ select:disabled {
   font-weight: bold;
   margin-top: 10px;
 }
-
-
-
-
     `;
         this.shadow.appendChild(style);
 
