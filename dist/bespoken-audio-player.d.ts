@@ -1,6 +1,7 @@
 declare module "bespoken-audio-player" {
     export class BespokenAudioPlayer extends HTMLElement {
         private shadow;
+        private playerContainer;
         private audio;
         private playlistData;
         private currentTrackIndex;
@@ -8,7 +9,7 @@ declare module "bespoken-audio-player" {
         private nextButton;
         private prevButton;
         private playbackRateSelect;
-        private progressTimeContainer;
+        private controlsProgressTimeContainer;
         private progressBar;
         private timeDisplay;
         private playlistContainer;
@@ -38,6 +39,11 @@ declare module "bespoken-audio-player" {
          * Parses the 'tracks' attribute and updates the playlist data.
          */
         private parseTracksAttribute;
+        private hidePlayer;
+        /**
+         * Create a container for all the player elements
+         */
+        private createPlayerContainer;
         /**
          * Creates the audio element and appends it to the shadow DOM
          */
@@ -49,7 +55,7 @@ declare module "bespoken-audio-player" {
         /**
          * Creates the container for progress bar and time display
          */
-        private createProgressAndTimeContainer;
+        private createControlsProgressAndTimeContainer;
         /**
          * Creates the progress bar and appends it to the progress-time container
          */
@@ -181,6 +187,7 @@ declare module "bespoken-audio-player" {
         private hasPrevAvailableTrack;
         private nextAvailableTrack;
         private prevAvailableTrack;
+        private dispatchTrackChangeEvent;
         /**
          * Renders the component's HTML structure and styles
          */
