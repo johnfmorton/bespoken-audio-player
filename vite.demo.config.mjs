@@ -1,6 +1,6 @@
 // This is the config file used to compile demo site that will be published to GitHub Pages.
 import { defineConfig } from 'vite'
-const path = require('path')
+import path from 'node:path'
 
 export default defineConfig({
     publicDir: path.resolve(__dirname, 'static'), // Define your static assets directory

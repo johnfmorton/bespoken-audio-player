@@ -11,15 +11,19 @@ export default defineConfig(({ mode }) => ({
    publicDir: mode === 'development' ? 'static' : false, // Static assets only in dev mode
     build: {
         lib: {
-            entry: path.resolve(
-                __dirname,
-                'lib/bespoken-audio-player.ts'
-            ),
-            name: 'bespoken-audio-player',
-            fileName: (format) =>
-                `bespoken-audio-player.${format}.js`,
+            entry: path.resolve(__dirname, 'lib/bespoken-audio-player.ts'),
+            name: 'bespoken-audio-player', // Library name
+            formats: ['es', 'umd'], // Output both ESM and UMD formats
+            fileName: (format) => `bespoken-audio-player.${format}.js`, // Naming for both formats
         },
-        minify: false,
+        rollupOptions: {
+            output: {
+                globals: {
+                    // Define any globals if needed for UMD builds
+                },
+            },
+        },
+        minify: false, // Adjust based on your needs
     },
     plugins: [
         banner(

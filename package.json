@@ -22,13 +22,12 @@
     "scripts": {
         "clean": "rm -rf dist es demo",
         "dev": "vite --host 0.0.0.0 --port 8888",
-        "vite-build": "vite build --config vite.demo.config.js",
-        "vite-1": "vite build",
-        "build": "vite build --config vite.demo.config.js && vite build && tsc --project tsconfig-type-declaration.json",
+        "vite-build": "vite build --config vite.demo.config.mjs",
+        "build": "vite build --config vite.demo.config.mjs && vite build && tsc --project tsconfig-type-declaration.json",
         "preview": "vite preview",
         "project-setup": "node project-setup.js && npm install",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "tsversion": "tsc --showConfig"
+        "ts-version": "tsc --showConfig"
     },
     "keywords": [
         "workflow",

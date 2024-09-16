@@ -47,8 +47,8 @@ const files = [
     'index.html',
     'package.json',
     'README.md',
-    'vite.config.js',
-    'vite.demo.config.js',
+    'vite.config.mjs',
+    'vite.demo.config.mjs',
     'demo-page-assets/demo.ts',
     // 'lib/vite-module-builder-w-ghpages-npm-template.ts',
 ]
