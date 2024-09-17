@@ -283,6 +283,27 @@ export class BespokenAudioPlayer extends HTMLElement {
         controlsContainer.setAttribute('role', 'group');
         controlsContainer.setAttribute('aria-label', 'Audio Player Controls');
 
+        // Helper function to create SVG icons with <use>
+        const createIcon = (iconId: string): SVGSVGElement => {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '14');
+            svg.setAttribute('height', '14');
+            svg.classList.add('default-icon');
+            // set viewBox attribute to the same value as the icon's viewBox
+            svg.setAttribute('viewBox', '0 0 24 24');
+
+            const useElement = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+            useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconId);
+
+            svg.appendChild(useElement);
+            return svg;
+        };
+
+        const playIconSvg = createIcon('#play-icon');
+        const pauseIconSvg = createIcon('#pause-icon');
+        const prevIconSvg = createIcon('#previous-icon');
+        const nextIconSvg = createIcon('#next-icon');
+
         // Play/Pause toggle button
         this.playPauseButton = document.createElement('button');
         this.playPauseButton.setAttribute('part', 'play-button');
@@ -298,11 +319,15 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         // Default content for play and pause icons
         if (!this.querySelector('[slot="play-icon"]')) {
-            playIconSlot.textContent = 'Play';
+            playIconSlot.innerHTML = playIconSvg.outerHTML;
         }
+
         if (!this.querySelector('[slot="pause-icon"]')) {
-            pauseIconSlot.textContent = 'Pause';
+            pauseIconSlot.innerHTML = pauseIconSvg.outerHTML;
+        } else {
+            this.playPauseButton.appendChild(pauseIconSlot);
         }
+
 
         this.playPauseButton.appendChild(playIconSlot);
         this.playPauseButton.appendChild(pauseIconSlot);
@@ -322,7 +347,8 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         // Default content if no custom icon is provided
         if (!this.querySelector('[slot="prev-icon"]')) {
-            prevIconSlot.textContent = 'Previous';
+            // prevIconSlot.textContent = 'Previous';
+            prevIconSlot.innerHTML = prevIconSvg.outerHTML
         }
 
         this.prevButton.appendChild(prevIconSlot);
@@ -340,7 +366,8 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         // Default content if no custom icon is provided
         if (!this.querySelector('[slot="next-icon"]')) {
-            nextIconSlot.textContent = 'Next';
+            // nextIconSlot.textContent = 'Next';
+            nextIconSlot.innerHTML = nextIconSvg.outerHTML;
         }
 
         this.nextButton.appendChild(nextIconSlot);
@@ -1102,23 +1129,23 @@ export class BespokenAudioPlayer extends HTMLElement {
         svgDefs.setAttribute('aria-hidden', 'true');
         svgDefs.setAttribute('style', 'display: none;');
         svgDefs.innerHTML = `
-      <symbol id="play-icon" viewBox="0 0 16 16">
-        <polygon points="3,2 13,8 3,14" fill="currentColor"/>
-      </symbol>
-      <symbol id="pause-icon" viewBox="0 0 16 16">
-        <rect x="3" y="2" width="4" height="12" fill="currentColor"/>
-        <rect x="9" y="2" width="4" height="12" fill="currentColor"/>
-      </symbol>
-      <symbol id="bullet-icon" viewBox="0 0 16 16">
-        <circle cx="8" cy="8" r="4" fill="currentColor"/>
-      </symbol>
-      <symbol id="error-icon" viewBox="0 0 16 16">
-          <!-- Circle -->
-          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-          <!-- Exclamation Mark -->
-          <rect x="7" y="3.25" width="2" height="5.5" fill="currentColor"/>
-          <circle cx="8" cy="11" r="1.5" fill="currentColor"/>
-        </symbol>
+<!-- Play Icon -->
+<symbol id="play-icon" viewBox="0 0 24 24"><path d="M8.93,6v12.31l8.72-6.16-8.72-6.16Z"/></symbol>
+
+<!-- Pause Icon -->
+<symbol id="pause-icon" viewBox="0 0 24 24"><rect x="6.94" y="6.66" width="3.69" height="11"/><rect x="13.56" y="6.66" width="3.69" height="11"/></symbol>
+
+<!-- Bullet Icon -->
+<symbol id="bullet-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></symbol>
+
+<!-- Error Icon -->
+<symbol id="error-icon" viewBox="0 0 24 24"><defs><style>.b{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px;}</style></defs><circle class="b" cx="11.75" cy="11.91" r="5.25"/><line class="b" x1="7.88" y1="16.03" x2="15.62" y2="8.28"/></symbol>
+
+<!-- Previous Icon (Two Left-Pointing Arrows) -->
+<symbol id="previous-icon" viewBox="0 0 24 24"><path d="M10.22,18.31V6L1.5,12.16l8.72,6.16ZM20.99,18.31V6l-8.72,6.16,8.72,6.16Z"/></symbol>
+
+<!-- Next Icon (Two Right-Pointing Arrows) -->
+<symbol id="next-icon" viewBox="0 0 24 24"><path d="M13.77,6v12.31l8.72-6.16-8.72-6.16ZM3,6v12.31l8.72-6.16L3,6Z"/></symbol>
       `;
         this.shadow.appendChild(svgDefs);
 
@@ -1172,6 +1199,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         text-decoration: none;
         cursor: default;
       }
+      /* TODO: Adjust the icon size and position as needed */
       .playlist-container svg {
         width: 10px;
         height: 10px;
@@ -1209,6 +1237,11 @@ export class BespokenAudioPlayer extends HTMLElement {
         flex-direction: row;
         align-items: center;
       }
+      
+        .controls-progress-time-container button svg.default-icon{
+            padding: 0;
+            margin: -3px 0 -3px 0;
+        }
       .progress-container {
         flex-grow: 1;
         width: 100%;
