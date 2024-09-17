@@ -1375,6 +1375,7 @@ select:disabled {
 .error-message {
   color: #ca3a31;
   font-weight: bold;
+  font-size: 0.7rem;
   margin-top: 10px;
 }
     `;
