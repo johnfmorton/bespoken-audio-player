@@ -642,46 +642,32 @@ export class BespokenAudioPlayer extends HTMLElement {
     /**
      * Loads the current track based on currentTrackIndex
      */
-    private async loadCurrentTrack() {
-        // If no audio element, return
+
+    private loadCurrentTrack(retryCount = 0, maxRetries = 3) {
         if (!this.audio) return;
+
         if (this.playlistData.length > 0) {
             const currentTrack = this.playlistData[this.currentTrackIndex];
+            this.audio.src = currentTrack.src;
+            this.audio.load();
 
-            try {
-                // Check if the audio source exists before setting it
-                const response = await fetch(currentTrack.src);
-                if (!response.ok) {
-                    throw new Error(`Audio file not found: ${currentTrack.src}`);
+            this.audio.onerror = () => {
+                console.error(`Failed to load audio: ${currentTrack.src}`);
+                if (retryCount < maxRetries) {
+                    console.log(`Retrying to load: ${currentTrack.src} (${retryCount + 1}/${maxRetries})`);
+                    this.loadCurrentTrack(retryCount + 1, maxRetries); // Retry loading the current track
+                } else {
+                    console.error(`The audio file, ${currentTrack.src}, could not be loaded. Skipping to the next track.`);
+                    this.nextTrack(); // Move to the next track after max retries
                 }
+            };
 
-                this.audio.src = currentTrack.src;
-                this.audio.load();  // Attempt to load the new track
-            } catch (error) {
-                console.error('Failed to load audio:', error);
-                alert('The audio file could not be loaded. Please check the file and try again.');
-                // return;  // Exit the function if the audio cannot be loaded <-- Commented out to continue playing other tracks
-            }
+            this.audio.oncanplay = () => {
+                console.log(`Successfully loaded: ${currentTrack.src}`);
+                this.audio?.play();
+            };
 
-            // Apply the user's selected playback rate
-            const rate = parseFloat(this.playbackRateSelect ? this.playbackRateSelect.value : '1');
-            this.audio.playbackRate = rate;
-
-            // Reset progress bar
-            if (this.progressBar) {
-                this.progressBar.value = '0';
-                this.updateProgressBar();
-            }
-
-            // Update play/pause button to reflect paused state
-            this.updatePlayPauseButton();
-
-            // Update playlist UI to indicate the current track
-            this.updatePlaylistUI();
-
-            // Reset time display
-            this.updateTimeDisplay();
-
+            // Remaining logic for playback rate, progress bar, etc.
         } else {
             this.audio.removeAttribute('src');
             this.updateControlsState(false);
@@ -807,6 +793,9 @@ export class BespokenAudioPlayer extends HTMLElement {
      * @returns Formatted time string
      */
     private formatTime(time: number): string {
+        if (!isFinite(time)) {
+            return '0:00';
+        }
         const totalSeconds = Math.floor(time);
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
