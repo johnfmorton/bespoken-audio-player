@@ -4,7 +4,7 @@
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-16T19:54:32.623Z 
+ * build date: 2024-09-17T13:29:54.847Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
@@ -512,30 +512,27 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     /**
      * Loads the current track based on currentTrackIndex
      */
-    async loadCurrentTrack() {
+    loadCurrentTrack(retryCount = 0, maxRetries = 3) {
       if (!this.audio) return;
       if (this.playlistData.length > 0) {
         const currentTrack = this.playlistData[this.currentTrackIndex];
-        try {
-          const response = await fetch(currentTrack.src);
-          if (!response.ok) {
-            throw new Error(`Audio file not found: ${currentTrack.src}`);
+        this.audio.src = currentTrack.src;
+        this.audio.load();
+        this.audio.onerror = () => {
+          console.error(`Failed to load audio: ${currentTrack.src}`);
+          if (retryCount < maxRetries) {
+            console.log(`Retrying to load: ${currentTrack.src} (${retryCount + 1}/${maxRetries})`);
+            this.loadCurrentTrack(retryCount + 1, maxRetries);
+          } else {
+            console.error(`The audio file, ${currentTrack.src}, could not be loaded. Skipping to the next track.`);
+            this.nextTrack();
           }
-          this.audio.src = currentTrack.src;
-          this.audio.load();
-        } catch (error) {
-          console.error("Failed to load audio:", error);
-          alert("The audio file could not be loaded. Please check the file and try again.");
-        }
-        const rate = parseFloat(this.playbackRateSelect ? this.playbackRateSelect.value : "1");
-        this.audio.playbackRate = rate;
-        if (this.progressBar) {
-          this.progressBar.value = "0";
-          this.updateProgressBar();
-        }
-        this.updatePlayPauseButton();
-        this.updatePlaylistUI();
-        this.updateTimeDisplay();
+        };
+        this.audio.oncanplay = () => {
+          var _a;
+          console.log(`Successfully loaded: ${currentTrack.src}`);
+          (_a = this.audio) == null ? void 0 : _a.play();
+        };
       } else {
         this.audio.removeAttribute("src");
         this.updateControlsState(false);
@@ -633,6 +630,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * @returns Formatted time string
      */
     formatTime(time) {
+      if (!isFinite(time)) {
+        return "0:00";
+      }
       const totalSeconds = Math.floor(time);
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
