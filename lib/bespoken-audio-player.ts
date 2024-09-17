@@ -283,6 +283,9 @@ export class BespokenAudioPlayer extends HTMLElement {
         controlsContainer.setAttribute('role', 'group');
         controlsContainer.setAttribute('aria-label', 'Audio Player Controls');
 
+        const prevNextContainer = document.createElement('div');
+        prevNextContainer.setAttribute('class', 'prev-next-container');
+
         // Helper function to create SVG icons with <use>
         const createIcon = (iconId: string): SVGSVGElement => {
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -306,7 +309,7 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         // Play/Pause toggle button
         this.playPauseButton = document.createElement('button');
-        this.playPauseButton.setAttribute('part', 'play-button');
+        this.playPauseButton.setAttribute('part', 'play-pause-toggle-button');
         this.playPauseButton.setAttribute('id', 'playPauseButton');
 
         // Use slots for play and pause icons
@@ -353,7 +356,7 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         this.prevButton.appendChild(prevIconSlot);
         this.prevButton.addEventListener('click', () => this.prevTrack());
-        controlsContainer.appendChild(this.prevButton);
+        prevNextContainer.appendChild(this.prevButton);
 
         // Next track button
         this.nextButton = document.createElement('button');
@@ -372,13 +375,10 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         this.nextButton.appendChild(nextIconSlot);
         this.nextButton.addEventListener('click', () => this.nextTrack());
-        controlsContainer.appendChild(this.nextButton);
+        prevNextContainer.appendChild(this.nextButton);
 
-        // Previous and Next buttons are only created if there is more than one track
-        if (this.playlistData.length > 1) {
-            controlsContainer.appendChild(this.prevButton);
-            controlsContainer.appendChild(this.nextButton);
-        }
+        // Append the prev/next container to the controls container
+        controlsContainer.appendChild(prevNextContainer);
 
         // Playback rate select dropdown
         this.playbackRateSelect = document.createElement('select');
@@ -1000,8 +1000,11 @@ export class BespokenAudioPlayer extends HTMLElement {
 
                     // Append the icon and text to the button
                     trackButton.appendChild(iconSvg);
-                    const textNode = document.createTextNode(` ${trackTitle}`); // Add a space for separation
-                    trackButton.appendChild(textNode);
+                    const spanNode = document.createElement('span');
+                    spanNode.classList.add('track-title');
+                    const textNode = document.createTextNode(`${trackTitle}`); // Add a space for separation
+                    spanNode.appendChild(textNode);
+                    trackButton.appendChild(spanNode);
 
                     // Add click listener to toggle play/pause or change track
                     trackButton.addEventListener('click', () => {
@@ -1156,198 +1159,183 @@ export class BespokenAudioPlayer extends HTMLElement {
         const style = document.createElement('style');
         style.textContent = `
       /* Styles for the audio player */
-      :host {
-        --primary-color: #334155;
-        --progress-bar-background: #ccc;
-        --progress-bar-fill: var(--primary-color);
-        --progress-bar-thumb: var(--primary-color);
-      }
-      .player-container.hidden {
-        display: none;
-      }
-      .playlist-container {
-        display: block;
-        width: 100%;
-        margin-bottom: 10px;
-      }
-      .playlist-container ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-
-      .playlist-container button {
-        display: block;
-        width: 100%;
-        text-align: left;
-        background: var(--playlist-background, #f9f9f9);
-        border: var(--playlist-border, 1px solid #ccc);
-        border-radius: var(--playlist-border-radius, 3px);
-        color: var(--playlist-color, #333);
-        cursor: pointer;
-        font-size: var(--playlist-font-size, 0.75rem);
-        font-weight: var(--playlist-font-weight, normal);
-        padding: var(--playlist-padding, 10px);
-      }
-      .playlist-container ul {
-        display: flex;
-        flex-direction: column;
-        gap: var(--playlist-gap-between-tracks, 5px);
-      }
-      .playlist-container ul li {
-        width: 100%;
-      }
-
-      .playlist-container button.current-track {
-        background-color: var(--playlist-current-background, var(--playlist-background, #f0f0f0));
+        :host {
+            --primary-color: #334155;
+            --progress-bar-background: #ccc;
+            --progress-bar-fill: var(--primary-color);
+            --progress-bar-thumb: var(--primary-color);
+        }
         
-        text-decoration: none;
-        cursor: default;
-      }
-      
-      .playlist-container button.current-track.playing {
-        background-color: var(--playlist-current-playing-background, var(--playlist-current-background, var(--playlist-background, #f0f0f0)));
-      }
-      
-      .playlist-container svg {
-        width: 10px;
-        height: 10px;
-        top: 0.5px;
-        position: relative;
-      }
-
-/* TODO: These styles need work */
-
-//    .playlist-container button.current-track.playing {
-//   /* Styles when the current track is playing */
-//   font-weight: bold;
-// }
-//
-// .playlist-container button.current-track.paused {
-//   /* Styles when the current track is paused */
-//   // font-weight: normal;
-// }
-//
-// /* Style for track buttons when pressed (playing) */
-// .playlist-container button.current-track.playing {
-//   background-color: rgba(51, 65, 85, 0.1);
-// }
-//
-// /* Style for track buttons when not pressed (paused) */
-// .playlist-container button.current-track.paused {
-//   background-color: transparent;
-// }
-
-/* end of TODO */
-
-      .controls-progress-time-container {
-        display: flex;
-        gap: 5px;
-        flex-direction: row;
-        align-items: center;
-      }
-      
-    .controls-progress-time-container button svg.default-icon{
-        padding: 0;
-        margin: -3px 0 -3px 0;
-    }
-      .progress-container {
-        flex-grow: 1;
-        width: 100%;
-      }
-      .progress-container input[type="range"] {
-        width: 100%;
-      }
-      .time-display {
-        font-size: 0.8em;
-        flex-shrink: 0;
-        margin-left: 5px;
-      }
-      div[role="group"] {
-        display: flex;
-        gap: 5px;
-        /* margin-top: 3px; */
-        align-items: center;
-      }
-      
-      button {
-        padding: var(--button-padding, 5px 10px);
-        font-size: 0.8rem;
-        background-color: var(--button-background, #fff);
-        color: var(--button-color, var(--primary-color));
-        cursor: pointer;
-      }
-      
-      /* set the button and select border styles */
+        .player-container {
+            /* the container-type allows a container query resize of the children element */
+            container-type: inline-size;
+        }
+        
+        .player-container.hidden {
+            display: none;
+        }
+        
+        .playlist-container {
+        
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .playlist-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .playlist-container button {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2px;
+            width: 100%;
+            text-align: left;
+            background: var(--playlist-background, #f9f9f9);
+            border: var(--playlist-border, 1px solid #ccc);
+            border-radius: var(--playlist-border-radius, 3px);
+            color: var(--playlist-color, #333);
+            cursor: pointer;
+            font-size: var(--playlist-font-size, 0.75rem);
+            font-weight: var(--playlist-font-weight, normal);
+            padding: var(--playlist-padding, 10px);
+        }
+        .playlist-container button span.track-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 1; /* Number of lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+               
+        .playlist-container ul {
+            display: flex;
+            flex-direction: column;
+            gap: var(--playlist-gap-between-tracks, 5px);
+        }
+        
+        .playlist-container ul li {
+            width: 100%;
+        }
+        
+        .playlist-container button.current-track {
+            background-color: var(--playlist-current-background, var(--playlist-background, #f9f9f9));
+            font-weight: var(--playlist-current-font-weight, bold);
+            text-decoration: none;
+        }
+        
+        .playlist-container button.current-track.playing {
+            font-weight: var(--playlist-current-playing-font-weight, var(--playlist-current-font-weight, bold));
+            background-color: var(--playlist-current-playing-background, var(--playlist-current-background, var(--playlist-background, #fff)));
+        }
+        
+        .playlist-container svg {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            min-width: 10px;
+        }
+        
+        .controls-progress-time-container {
+            display: flex;
+            gap: var(--controls-gap, 5px);
+            flex-direction: row;
+            align-items: center;
+        }
+        
+        /* style the default icons */
+        .controls-progress-time-container button svg.default-icon {
+            padding: 0;
+            margin: -3px 0 -3px 0;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+        }
+        
+        .progress-container input[type="range"] {
+            width: 100%;
+        }
+        
+        .time-display {
+            line-height: 1;
+            font-size: 0.625em;
+            font-color: #bbc0c7;
+            flex-shrink: 0;
+            font-family: monospace;
+        }
+        
+        div[role="group"] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        
+            gap: var(--audio-controls-gap, var(--controls-gap, 5px));
+            margin-top: 0;
+            align-items: center;
+        }
+        
+        .prev-next-container {
+            display: flex;
+            gap: var(--prev-next-controls-gap, var(--audio-controls-gap, var(--controls-gap, 5px)));
+        }
+        
+        .controls-progress-time-container button {
+            padding: var(--button-padding, 3px 6px);
+            font-size: 0.8rem;
+            background-color: var(--button-background, #fff);
+            color: var(--button-color, var(--primary-color));
+            cursor: pointer;
+        }
+        
+        /* set the button and select border styles */
         button, select {
             border-width: var(--button-border-size, 1px);
-            border-color: var(--button-border-color, #596570);
+            border-color: var(--button-border-color, #9F9F9F);
             border-style: solid;
             border-radius: 2px;
         }
-        /* Style the select element */
-
-select {
-  appearance: none; /* Remove default select styles */
-  -webkit-appearance: none; /* For Safari */
-  -moz-appearance: none; /* For Firefox */
-  background-color: var(--select-background, #fff);
-  color: var(--select-color, #334155);
-  padding: var(--select-padding, 3px 8px);
-  font-size: var(--select-font-size, 0.8rem);
-  border-radius: var(--select-border-radius, 2px);
-  cursor: pointer;
-  
-  padding-right: 5px; /* Ensure space for dropdown arrow */
-  position: relative; /* Ensure the arrow is positioned correctly */
-}
-
-/* Remove default browser dropdown arrow */
-select::-ms-expand {
-  display: none;
-}
-select::-moz-focus-inner {
-  border: 0;
-}
-
-/* Add custom dropdown indicator using ::after pseudo-element */
-select::after {
-  content: '';
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid currentColor;
-}
-
-/* Ensure consistent focus outline */
-select:focus {
-  outline: none;
-  border-color: var(--focus-color, #2563eb);
-  box-shadow: 0 0 3px 1px var(--focus-color, #2563eb);
-}
-
-/* Style for disabled select */
-select:disabled {
-  background-color: #f0f0f0;
-  color: #999;
-  cursor: not-allowed;
-  border-color: #ddd;
-}
-            
-      @media (max-width: 600px) {
-        .controls-progress-time-container {
-          flex-direction: column;
-          align-items: center;
+        
+        /* Style the select element - the speed drop down */
+        
+        select {
+            appearance: none; /* Remove default select styles */
+            -webkit-appearance: none; /* For Safari */
+            -moz-appearance: none; /* For Firefox */
+            background-color: var(--select-background, #fff);
+            color: var(--select-color, #334155);
+            padding: var(--select-padding, 4px 4px);
+            font-size: var(--select-font-size, 0.7rem);
+            border-radius: var(--select-border-radius, 2px);
+            cursor: pointer;
         }
-        .time-display {
-          margin-left: 0;
-          margin-top: 5px;
+        
+        /* Container query for small container sizes */
+        @container (max-width: 300px) {
+            .controls-progress-time-container {
+                display: flex;
+                padding: 8px 0;
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+        
+            .progress-container {
+        
+            }
+        
+            .time-display {
+                margin-left: 0;
+                margin-top: 0;
+            }
         }
-      }
 
       /* Progress Bar Styles */
       input[type="range"] {
@@ -1401,26 +1389,24 @@ select:disabled {
         border-radius: 5px;
       }
 
+        /* Style for disabled buttons */
+        .playlist-container button:disabled {
+          cursor: not-allowed;
+          color: var(--playlist-color-error, #ca3a31); /* Optional: Change text color */
+        }
+        
+        /* Optionally, add an error icon */
+        .playlist-container button:disabled svg use {
+          href: '#error-icon'; /* Reference an error icon */
+        }
 
-/* Style for disabled buttons */
-.playlist-container button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: gray; /* Optional: Change text color */
-}
-
-/* Optionally, add an error icon */
-.playlist-container button:disabled svg use {
-  href: '#error-icon'; /* Reference an error icon */
-}
-
-/* Error Message Styles */
-.error-message {
-  color: #ca3a31;
-  font-weight: bold;
-  font-size: 0.7rem;
-  margin-top: 10px;
-}
+        /* Error Message Styles */
+        .error-message {
+          color: #ca3a31;
+          font-weight: bold;
+          font-size: 0.7rem;
+          margin-top: 10px;
+        }
     `;
         this.shadow.appendChild(style);
 
