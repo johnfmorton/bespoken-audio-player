@@ -982,10 +982,13 @@ export class BespokenAudioPlayer extends HTMLElement {
                         // Set the appropriate icon based on state
                         trackButton.classList.add('current-track');
                         trackButton.setAttribute('aria-current', 'true');
-
+                        trackButton.classList.add('playing');
                         if (this.audio && this.audio.paused) {
                             useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#play-icon');
                             trackButton.setAttribute('aria-pressed', 'false');
+                            // remove the playing class
+                            trackButton.classList.remove('playing');
+
                         } else {
                             useElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#pause-icon');
                             trackButton.setAttribute('aria-pressed', 'true');
@@ -1163,6 +1166,8 @@ export class BespokenAudioPlayer extends HTMLElement {
         display: none;
       }
       .playlist-container {
+        display: block;
+        width: 100%;
         margin-bottom: 10px;
       }
       .playlist-container ul {
@@ -1172,34 +1177,38 @@ export class BespokenAudioPlayer extends HTMLElement {
       }
 
       .playlist-container button {
-        background: none;
-        border: none;
-        color: var(--primary-color);
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: var(--playlist-background, #f9f9f9);
+        border: var(--playlist-border, 1px solid #ccc);
+        border-radius: var(--playlist-border-radius, 3px);
+        color: var(--playlist-color, #333);
         cursor: pointer;
+        font-size: var(--playlist-font-size, 0.75rem);
+        font-weight: var(--playlist-font-weight, normal);
+        padding: var(--playlist-padding, 10px);
       }
       .playlist-container ul {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: var(--playlist-gap-between-tracks, 5px);
       }
       .playlist-container ul li {
-        background-color: #f9f9f9;
-        border-radius: 3px;
-        border: 1px solid #ddd;
         width: 100%;
       }
-      .playlist-container button {
-        display: block;
-        padding: 10px;
-        width: 100%;
-        text-align: left;
-      }
+
       .playlist-container button.current-track {
-        font-weight: bold;
+        background-color: var(--playlist-current-background, var(--playlist-background, #f0f0f0));
+        
         text-decoration: none;
         cursor: default;
       }
-      /* TODO: Adjust the icon size and position as needed */
+      
+      .playlist-container button.current-track.playing {
+        background-color: var(--playlist-current-playing-background, var(--playlist-current-background, var(--playlist-background, #f0f0f0)));
+      }
+      
       .playlist-container svg {
         width: 10px;
         height: 10px;
@@ -1209,25 +1218,25 @@ export class BespokenAudioPlayer extends HTMLElement {
 
 /* TODO: These styles need work */
 
-   .playlist-container button.current-track.playing {
-  /* Styles when the current track is playing */
-  font-weight: bold;
-}
-
-.playlist-container button.current-track.paused {
-  /* Styles when the current track is paused */
-  // font-weight: normal;
-}
-
-/* Style for track buttons when pressed (playing) */
-.playlist-container button.current-track.playing {
-  background-color: rgba(51, 65, 85, 0.1);
-}
-
-/* Style for track buttons when not pressed (paused) */
-.playlist-container button.current-track.paused {
-  background-color: transparent;
-}
+//    .playlist-container button.current-track.playing {
+//   /* Styles when the current track is playing */
+//   font-weight: bold;
+// }
+//
+// .playlist-container button.current-track.paused {
+//   /* Styles when the current track is paused */
+//   // font-weight: normal;
+// }
+//
+// /* Style for track buttons when pressed (playing) */
+// .playlist-container button.current-track.playing {
+//   background-color: rgba(51, 65, 85, 0.1);
+// }
+//
+// /* Style for track buttons when not pressed (paused) */
+// .playlist-container button.current-track.paused {
+//   background-color: transparent;
+// }
 
 /* end of TODO */
 
@@ -1238,10 +1247,10 @@ export class BespokenAudioPlayer extends HTMLElement {
         align-items: center;
       }
       
-        .controls-progress-time-container button svg.default-icon{
-            padding: 0;
-            margin: -3px 0 -3px 0;
-        }
+    .controls-progress-time-container button svg.default-icon{
+        padding: 0;
+        margin: -3px 0 -3px 0;
+    }
       .progress-container {
         flex-grow: 1;
         width: 100%;
@@ -1257,23 +1266,24 @@ export class BespokenAudioPlayer extends HTMLElement {
       div[role="group"] {
         display: flex;
         gap: 5px;
-        margin-top: 10px;
+        /* margin-top: 3px; */
         align-items: center;
       }
       
       button {
-        padding: 3px 5px;
+        padding: var(--button-padding, 5px 10px);
         font-size: 0.8rem;
         background-color: var(--button-background, #fff);
         color: var(--button-color, var(--primary-color));
-        
-        border-radius: 2px;
         cursor: pointer;
       }
       
       /* set the button and select border styles */
         button, select {
-            border: 1px solid color-mix(in srgb, var(--button-border-color, #596570) 70%, transparent 0%);
+            border-width: var(--button-border-size, 1px);
+            border-color: var(--button-border-color, #596570);
+            border-style: solid;
+            border-radius: 2px;
         }
         /* Style the select element */
 
@@ -1283,9 +1293,9 @@ select {
   -moz-appearance: none; /* For Firefox */
   background-color: var(--select-background, #fff);
   color: var(--select-color, #334155);
-  padding: 3px 8px;
-  font-size: 0.8rem;
-  border-radius: 2px;
+  padding: var(--select-padding, 3px 8px);
+  font-size: var(--select-font-size, 0.8rem);
+  border-radius: var(--select-border-radius, 2px);
   cursor: pointer;
   
   padding-right: 5px; /* Ensure space for dropdown arrow */
