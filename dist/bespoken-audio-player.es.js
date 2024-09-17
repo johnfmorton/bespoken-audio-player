@@ -4,7 +4,7 @@
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-17T13:29:54.847Z 
+ * build date: 2024-09-17T20:36:18.470Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -230,8 +230,25 @@ class BespokenAudioPlayer extends HTMLElement {
     const controlsContainer = document.createElement("div");
     controlsContainer.setAttribute("role", "group");
     controlsContainer.setAttribute("aria-label", "Audio Player Controls");
+    const prevNextContainer = document.createElement("div");
+    prevNextContainer.setAttribute("class", "prev-next-container");
+    const createIcon = (iconId) => {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "14");
+      svg.setAttribute("height", "14");
+      svg.classList.add("default-icon");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      const useElement = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      useElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconId);
+      svg.appendChild(useElement);
+      return svg;
+    };
+    const playIconSvg = createIcon("#play-icon");
+    const pauseIconSvg = createIcon("#pause-icon");
+    const prevIconSvg = createIcon("#previous-icon");
+    const nextIconSvg = createIcon("#next-icon");
     this.playPauseButton = document.createElement("button");
-    this.playPauseButton.setAttribute("part", "play-button");
+    this.playPauseButton.setAttribute("part", "play-pause-toggle-button");
     this.playPauseButton.setAttribute("id", "playPauseButton");
     const playIconSlot = document.createElement("slot");
     playIconSlot.name = "play-icon";
@@ -239,10 +256,12 @@ class BespokenAudioPlayer extends HTMLElement {
     pauseIconSlot.name = "pause-icon";
     pauseIconSlot.style.display = "none";
     if (!this.querySelector('[slot="play-icon"]')) {
-      playIconSlot.textContent = "Play";
+      playIconSlot.innerHTML = playIconSvg.outerHTML;
     }
     if (!this.querySelector('[slot="pause-icon"]')) {
-      pauseIconSlot.textContent = "Pause";
+      pauseIconSlot.innerHTML = pauseIconSvg.outerHTML;
+    } else {
+      this.playPauseButton.appendChild(pauseIconSlot);
     }
     this.playPauseButton.appendChild(playIconSlot);
     this.playPauseButton.appendChild(pauseIconSlot);
@@ -255,26 +274,23 @@ class BespokenAudioPlayer extends HTMLElement {
     const prevIconSlot = document.createElement("slot");
     prevIconSlot.name = "prev-icon";
     if (!this.querySelector('[slot="prev-icon"]')) {
-      prevIconSlot.textContent = "Previous";
+      prevIconSlot.innerHTML = prevIconSvg.outerHTML;
     }
     this.prevButton.appendChild(prevIconSlot);
     this.prevButton.addEventListener("click", () => this.prevTrack());
-    controlsContainer.appendChild(this.prevButton);
+    prevNextContainer.appendChild(this.prevButton);
     this.nextButton = document.createElement("button");
     this.nextButton.setAttribute("part", "next-button");
     this.nextButton.setAttribute("aria-label", "Next Track");
     const nextIconSlot = document.createElement("slot");
     nextIconSlot.name = "next-icon";
     if (!this.querySelector('[slot="next-icon"]')) {
-      nextIconSlot.textContent = "Next";
+      nextIconSlot.innerHTML = nextIconSvg.outerHTML;
     }
     this.nextButton.appendChild(nextIconSlot);
     this.nextButton.addEventListener("click", () => this.nextTrack());
-    controlsContainer.appendChild(this.nextButton);
-    if (this.playlistData.length > 1) {
-      controlsContainer.appendChild(this.prevButton);
-      controlsContainer.appendChild(this.nextButton);
-    }
+    prevNextContainer.appendChild(this.nextButton);
+    controlsContainer.appendChild(prevNextContainer);
     this.playbackRateSelect = document.createElement("select");
     this.playbackRateSelect.setAttribute("aria-label", "Playback Speed");
     const playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -748,9 +764,11 @@ class BespokenAudioPlayer extends HTMLElement {
           } else if (this.currentTrackIndex === actualIndex) {
             trackButton.classList.add("current-track");
             trackButton.setAttribute("aria-current", "true");
+            trackButton.classList.add("playing");
             if (this.audio && this.audio.paused) {
               useElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#play-icon");
               trackButton.setAttribute("aria-pressed", "false");
+              trackButton.classList.remove("playing");
             } else {
               useElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#pause-icon");
               trackButton.setAttribute("aria-pressed", "true");
@@ -760,8 +778,11 @@ class BespokenAudioPlayer extends HTMLElement {
             trackButton.setAttribute("aria-pressed", "false");
           }
           trackButton.appendChild(iconSvg);
-          const textNode = document.createTextNode(` ${trackTitle}`);
-          trackButton.appendChild(textNode);
+          const spanNode = document.createElement("span");
+          spanNode.classList.add("track-title");
+          const textNode = document.createTextNode(`${trackTitle}`);
+          spanNode.appendChild(textNode);
+          trackButton.appendChild(spanNode);
           trackButton.addEventListener("click", () => {
             if (this.currentTrackIndex === actualIndex) {
               this.togglePlayPause();
@@ -866,207 +887,205 @@ class BespokenAudioPlayer extends HTMLElement {
     svgDefs.setAttribute("aria-hidden", "true");
     svgDefs.setAttribute("style", "display: none;");
     svgDefs.innerHTML = `
-      <symbol id="play-icon" viewBox="0 0 16 16">
-        <polygon points="3,2 13,8 3,14" fill="currentColor"/>
-      </symbol>
-      <symbol id="pause-icon" viewBox="0 0 16 16">
-        <rect x="3" y="2" width="4" height="12" fill="currentColor"/>
-        <rect x="9" y="2" width="4" height="12" fill="currentColor"/>
-      </symbol>
-      <symbol id="bullet-icon" viewBox="0 0 16 16">
-        <circle cx="8" cy="8" r="4" fill="currentColor"/>
-      </symbol>
-      <symbol id="error-icon" viewBox="0 0 16 16">
-          <!-- Circle -->
-          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-          <!-- Exclamation Mark -->
-          <rect x="7" y="3.25" width="2" height="5.5" fill="currentColor"/>
-          <circle cx="8" cy="11" r="1.5" fill="currentColor"/>
-        </symbol>
+<!-- Play Icon -->
+<symbol id="play-icon" viewBox="0 0 24 24"><path d="M8.93,6v12.31l8.72-6.16-8.72-6.16Z"/></symbol>
+
+<!-- Pause Icon -->
+<symbol id="pause-icon" viewBox="0 0 24 24"><rect x="6.94" y="6.66" width="3.69" height="11"/><rect x="13.56" y="6.66" width="3.69" height="11"/></symbol>
+
+<!-- Bullet Icon -->
+<symbol id="bullet-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></symbol>
+
+<!-- Error Icon -->
+<symbol id="error-icon" viewBox="0 0 24 24"><defs><style>.b{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px;}</style></defs><circle class="b" cx="11.75" cy="11.91" r="5.25"/><line class="b" x1="7.88" y1="16.03" x2="15.62" y2="8.28"/></symbol>
+
+<!-- Previous Icon (Two Left-Pointing Arrows) -->
+<symbol id="previous-icon" viewBox="0 0 24 24"><path d="M10.22,18.31V6L1.5,12.16l8.72,6.16ZM20.99,18.31V6l-8.72,6.16,8.72,6.16Z"/></symbol>
+
+<!-- Next Icon (Two Right-Pointing Arrows) -->
+<symbol id="next-icon" viewBox="0 0 24 24"><path d="M13.77,6v12.31l8.72-6.16-8.72-6.16ZM3,6v12.31l8.72-6.16L3,6Z"/></symbol>
       `;
     this.shadow.appendChild(svgDefs);
     const style = document.createElement("style");
     style.textContent = `
       /* Styles for the audio player */
-      :host {
-        --primary-color: #334155;
-        --progress-bar-background: #ccc;
-        --progress-bar-fill: var(--primary-color);
-        --progress-bar-thumb: var(--primary-color);
-      }
-      .player-container.hidden {
-        display: none;
-      }
-      .playlist-container {
-        margin-bottom: 10px;
-      }
-      .playlist-container ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-
-      .playlist-container button {
-        background: none;
-        border: none;
-        color: var(--primary-color);
-        cursor: pointer;
-      }
-      .playlist-container ul {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .playlist-container ul li {
-        background-color: #f9f9f9;
-        border-radius: 3px;
-        border: 1px solid #ddd;
-        width: 100%;
-      }
-      .playlist-container button {
-        display: block;
-        padding: 10px;
-        width: 100%;
-        text-align: left;
-      }
-      .playlist-container button.current-track {
-        font-weight: bold;
-        text-decoration: none;
-        cursor: default;
-      }
-      .playlist-container svg {
-        width: 10px;
-        height: 10px;
-        top: 0.5px;
-        position: relative;
-      }
-
-/* TODO: These styles need work */
-
-   .playlist-container button.current-track.playing {
-  /* Styles when the current track is playing */
-  font-weight: bold;
-}
-
-.playlist-container button.current-track.paused {
-  /* Styles when the current track is paused */
-  // font-weight: normal;
-}
-
-/* Style for track buttons when pressed (playing) */
-.playlist-container button.current-track.playing {
-  background-color: rgba(51, 65, 85, 0.1);
-}
-
-/* Style for track buttons when not pressed (paused) */
-.playlist-container button.current-track.paused {
-  background-color: transparent;
-}
-
-/* end of TODO */
-
-      .controls-progress-time-container {
-        display: flex;
-        gap: 5px;
-        flex-direction: row;
-        align-items: center;
-      }
-      .progress-container {
-        flex-grow: 1;
-        width: 100%;
-      }
-      .progress-container input[type="range"] {
-        width: 100%;
-      }
-      .time-display {
-        font-size: 0.8em;
-        flex-shrink: 0;
-        margin-left: 5px;
-      }
-      div[role="group"] {
-        display: flex;
-        gap: 5px;
-        margin-top: 10px;
-        align-items: center;
-      }
-      
-      button {
-        padding: 3px 5px;
-        font-size: 0.8rem;
-        background-color: var(--button-background, #fff);
-        color: var(--button-color, var(--primary-color));
+        :host {
+            --primary-color: #334155;
+            --progress-bar-background: #ccc;
+            --progress-bar-fill: var(--primary-color);
+            --progress-bar-thumb: var(--primary-color);
+        }
         
-        border-radius: 2px;
-        cursor: pointer;
-      }
-      
-      /* set the button and select border styles */
-        button, select {
-            border: 1px solid color-mix(in srgb, var(--button-border-color, #596570) 70%, transparent 0%);
+        .player-container {
+            /* the container-type allows a container query resize of the children element */
+            container-type: inline-size;
         }
-        /* Style the select element */
-
-select {
-  appearance: none; /* Remove default select styles */
-  -webkit-appearance: none; /* For Safari */
-  -moz-appearance: none; /* For Firefox */
-  background-color: var(--select-background, #fff);
-  color: var(--select-color, #334155);
-  padding: 3px 8px;
-  font-size: 0.8rem;
-  border-radius: 2px;
-  cursor: pointer;
-  
-  padding-right: 5px; /* Ensure space for dropdown arrow */
-  position: relative; /* Ensure the arrow is positioned correctly */
-}
-
-/* Remove default browser dropdown arrow */
-select::-ms-expand {
-  display: none;
-}
-select::-moz-focus-inner {
-  border: 0;
-}
-
-/* Add custom dropdown indicator using ::after pseudo-element */
-select::after {
-  content: '';
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid currentColor;
-}
-
-/* Ensure consistent focus outline */
-select:focus {
-  outline: none;
-  border-color: var(--focus-color, #2563eb);
-  box-shadow: 0 0 3px 1px var(--focus-color, #2563eb);
-}
-
-/* Style for disabled select */
-select:disabled {
-  background-color: #f0f0f0;
-  color: #999;
-  cursor: not-allowed;
-  border-color: #ddd;
-}
-            
-      @media (max-width: 600px) {
+        
+        .player-container.hidden {
+            display: none;
+        }
+        
+        .playlist-container {
+        
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .playlist-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .playlist-container button {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2px;
+            width: 100%;
+            text-align: left;
+            background: var(--playlist-background, #f9f9f9);
+            border: var(--playlist-border, 1px solid #ccc);
+            border-radius: var(--playlist-border-radius, 3px);
+            color: var(--playlist-color, #333);
+            cursor: pointer;
+            font-size: var(--playlist-font-size, 0.75rem);
+            font-weight: var(--playlist-font-weight, normal);
+            padding: var(--playlist-padding, 10px);
+        }
+        .playlist-container button span.track-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 1; /* Number of lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+               
+        .playlist-container ul {
+            display: flex;
+            flex-direction: column;
+            gap: var(--playlist-gap-between-tracks, 5px);
+        }
+        
+        .playlist-container ul li {
+            width: 100%;
+        }
+        
+        .playlist-container button.current-track {
+            background-color: var(--playlist-current-background, var(--playlist-background, #f9f9f9));
+            font-weight: var(--playlist-current-font-weight, bold);
+            text-decoration: none;
+        }
+        
+        .playlist-container button.current-track.playing {
+            font-weight: var(--playlist-current-playing-font-weight, var(--playlist-current-font-weight, bold));
+            background-color: var(--playlist-current-playing-background, var(--playlist-current-background, var(--playlist-background, #fff)));
+        }
+        
+        .playlist-container svg {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            min-width: 10px;
+        }
+        
         .controls-progress-time-container {
-          flex-direction: column;
-          align-items: center;
+            display: flex;
+            gap: var(--controls-gap, 5px);
+            flex-direction: row;
+            align-items: center;
         }
+        
+        /* style the default icons */
+        .controls-progress-time-container button svg.default-icon {
+            padding: 0;
+            margin: -3px 0 -3px 0;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+        }
+        
+        .progress-container input[type="range"] {
+            width: 100%;
+        }
+        
         .time-display {
-          margin-left: 0;
-          margin-top: 5px;
+            line-height: 1;
+            font-size: 0.625em;
+            font-color: #bbc0c7;
+            flex-shrink: 0;
+            font-family: monospace;
         }
-      }
+        
+        div[role="group"] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        
+            gap: var(--audio-controls-gap, var(--controls-gap, 5px));
+            margin-top: 0;
+            align-items: center;
+        }
+        
+        .prev-next-container {
+            display: flex;
+            gap: var(--prev-next-controls-gap, var(--audio-controls-gap, var(--controls-gap, 5px)));
+        }
+        
+        .controls-progress-time-container button {
+            padding: var(--button-padding, 3px 6px);
+            font-size: 0.8rem;
+            background-color: var(--button-background, #fff);
+            color: var(--button-color, var(--primary-color));
+            cursor: pointer;
+        }
+        
+        /* set the button and select border styles */
+        button, select {
+            border-width: var(--button-border-size, 1px);
+            border-color: var(--button-border-color, #9F9F9F);
+            border-style: solid;
+            border-radius: 2px;
+        }
+        
+        /* Style the select element - the speed drop down */
+        
+        select {
+            appearance: none; /* Remove default select styles */
+            -webkit-appearance: none; /* For Safari */
+            -moz-appearance: none; /* For Firefox */
+            background-color: var(--select-background, #fff);
+            color: var(--select-color, #334155);
+            padding: var(--select-padding, 4px 4px);
+            font-size: var(--select-font-size, 0.7rem);
+            border-radius: var(--select-border-radius, 2px);
+            cursor: pointer;
+        }
+        
+        /* Container query for small container sizes */
+        @container (max-width: 300px) {
+            .controls-progress-time-container {
+                display: flex;
+                padding: 8px 0;
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+        
+            .progress-container {
+        
+            }
+        
+            .time-display {
+                margin-left: 0;
+                margin-top: 0;
+            }
+        }
 
       /* Progress Bar Styles */
       input[type="range"] {
@@ -1120,25 +1139,24 @@ select:disabled {
         border-radius: 5px;
       }
 
+        /* Style for disabled buttons */
+        .playlist-container button:disabled {
+          cursor: not-allowed;
+          color: var(--playlist-color-error, #ca3a31); /* Optional: Change text color */
+        }
+        
+        /* Optionally, add an error icon */
+        .playlist-container button:disabled svg use {
+          href: '#error-icon'; /* Reference an error icon */
+        }
 
-/* Style for disabled buttons */
-.playlist-container button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: gray; /* Optional: Change text color */
-}
-
-/* Optionally, add an error icon */
-.playlist-container button:disabled svg use {
-  href: '#error-icon'; /* Reference an error icon */
-}
-
-/* Error Message Styles */
-.error-message {
-  color: #ca3a31;
-  font-weight: bold;
-  margin-top: 10px;
-}
+        /* Error Message Styles */
+        .error-message {
+          color: #ca3a31;
+          font-weight: bold;
+          font-size: 0.7rem;
+          margin-top: 10px;
+        }
     `;
     this.shadow.appendChild(style);
     if (this.playlistData.length > 0) {
