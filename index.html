@@ -5,41 +5,71 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Module Demo Page</title>
-
-
   <!-- Script tag for demo page purposes in demo-page-assets/demo.ts  -->
   <script type="module" src="demo-page-assets/demo.ts"></script>
 
   <style>
       bespoken-audio-player#my-audio-player {
-          --button-background: #237782;
+          --playlist-background: aqua;
+          --playlist-color: green;
+          --playlist-color-error: #0b09d0; /* Midnight blue */
+          --playlist-border: 1px solid blue;
+          --playlist-border-radius: 15px 0 15px 0;
+          --playlist-padding: 0.5rem 0.4rem;
+          --playlist-font-size: 0.65rem;
+          --playlist-font-weight: 300;
+          --playlist-gap-between-tracks: 0.5em;
+
+          --playlist-current-background: yellow;
+          --playlist-current-color: #673ab7;
+          --playlist-current-border: 1px solid #673ab7;
+          --playlist-current-border-radius: 2px;
+          --playlist-current-padding: 0.2em 0.5em;
+          --playlist-current-font-size: 0.65rem;
+          --playlist-current-font-weight: thin;
+
+          --playlist-current-playing-background: lightblue;
+          --playlist-current-playing-color: #673ab7;
+          --playlist-current-playing-border: 1px solid #673ab7;
+          --playlist-current-playing-border-radius: 2px;
+          --playlist-current-playing-padding: 0.2em 0.5em;
+          --playlist-current-playing-font-size: 0.65rem;
+          --playlist-current-playing-font-weight: 900;
+
+          --button-background: transparent;
           --button-color: #00f;
           --button-border-color: #403b3b;
+          --button-border-size: 0;
+          --button-padding: 0 0 0 0;
           --primary-color: #3ec635;
           --progress-bar-background: #cdcc53;
           --progress-bar-fill: #ff5722;
           --progress-bar-thumb: #1acf74;
           --select-background: #673ab7;
           --select-color: #fff;
+          --select-padding: 1px 2px;
+          --select-border-size: 0;
+          --select-border-radius: 2px;
+          --select-border-color: #673ab7;
+          --select-font-size: 0.65rem;
+
+          --controls-gap: 5px;
+          --audio-controls-gap: 10px;
+          --prev-next-controls-gap: 0px;
       }
 
-      /* Style the play/pause button */
-      bespoken-audio-player#my-audio-player::part(play-button) {
-          background-color: #673ab7;
-          color: #fff;
-          border-radius: 3px;
-      }
-
-      /* Style the previous and next buttons */
+      /*!* Style the previous and next buttons *!*/
+      bespoken-audio-player#my-audio-player::part(play-pause-toggle-button),
       bespoken-audio-player#my-audio-player::part(prev-button),
       bespoken-audio-player#my-audio-player::part(next-button) {
-          background-color: #673ab7;
-          color: #fff;
-          border-radius: 5px 0 0 5px;
+          background-color: transparent;
+          padding: 2px;
       }
 
-      bespoken-audio-player#my-audio-player::part(next-button) {
-          border-radius: 0 5px 5px 0;
+      bespoken-audio-player#my-audio-player::part(play-pause-toggle-button):hover,
+      bespoken-audio-player#my-audio-player::part(prev-button):hover,
+      bespoken-audio-player#my-audio-player::part(next-button):hover {
+          background-color: mediumpurple;
       }
 
       /* Style the time display */
@@ -48,11 +78,29 @@
           font-weight: bold;
           border: 1px solid #673ab7;
           border-radius: 2px;
-          padding: 0.2em 0.5em;
-          font-size: 0.65rem;
+          padding: 0 3px;
+          line-height: 2;
+          font-size: 0.6rem;
           background-color: antiquewhite;
       }
+
+      /* In #customize-version-2 we only customize the spacing around the previous and next buttons to group them together */
+
+      bespoken-audio-player#customize-version-2 {
+          --prev-next-controls-gap: 0px;
+      }
+
+      bespoken-audio-player#customize-version-2::part(prev-button) {
+          border-radius: 2px 0 0 2px;
+      }
+
+      bespoken-audio-player#customize-version-2::part(next-button) {
+          border-radius: 0 2px 2px 0;
+          border-left: 0;
+      }
+
   </style>
+
 </head>
 
 <body>
@@ -62,55 +110,62 @@
     <div class="mx-auto lg:mx-0">
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">Demo: Bespoken Audio Player</h1>
 
-      <p>
-        The `bespoken-audio-player` element is a custom element that allows you to play audio files in a playlist. The
-        element is built using the Web Components API and is compatible with all modern browsers.
-      </p>
+      <div class="flex flex-row gap-2">
+        <div class="w-full">
+          <bespoken-audio-player id="my-audio-player"
+                                 class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
+                                 playlist-visible tracks='[
+           {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "REMOVEDtest.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
+            {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
+            {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
+          ]'>
 
-      <h2>Example 1: Single track</h2>
-      <p>
-        In this first example, the `bespoken-audio-player` element is used to play a single audio file.
-      </p>
+            <span slot="play-icon">▶️</span>
+            <span slot="pause-icon">⏸️</span>
+            <span slot="prev-icon">⏮️</span>
+            <span slot="next-icon">⏭️</span>
 
-      <pre class="text-xs text-yellow-100 whitespace-pre-wrap">
-&lt;bespoken-audio-player
-    class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
-    tracks='[{"src": "hello-america-audio-20240913-063213.mp3"}]'
-    >
-&lt;/bespoken-audio-player></pre>
+          </bespoken-audio-player>
 
-      <bespoken-audio-player data-class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5" tracks='[{"src": "hello-america-audio-20240913-063213.mp3"}]'></bespoken-audio-player>
+        </div>
+        <div class="w-full">
+          <bespoken-audio-player
+                  class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
+                  playlist-visible tracks='[
+           {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "REMOVEDtest.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
+            {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
+            {"src": "test.mp3", "title": "This is a test file"},
+            {"src": "test.mp3"},
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
+          ]'>
 
+          </bespoken-audio-player>
+        </div>
+      </div>
 
-      <h2>Example 2:</h2>
+      <div>
+        <bespoken-audio-player
+                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
+                only-current-track-visible tracks='[
 
-<p>
-        The `only-current-track-visible` attribute will override the `playlist-visible` attribute and only show the
-        current track. Notice that there are some Tailwind CSS classes added to the element to style the overall component.
-      </p>
+            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line"}
+          ]'>
 
-<pre class="text-xs text-yellow-100 whitespace-pre-wrap" >
-&lt;bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
-    only-current-track-visible
-    tracks='[
-      {"src": "test.mp3", "title": "Introduction"},
-      {"src": "test.mp3"},
-      {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
-    ]'
-    >
-&lt;/bespoken-audio-player></pre>
+        </bespoken-audio-player>
+      </div>
 
-      <bespoken-audio-player class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5"
-                             playlist-visible x-playlist-visible tracks='[
-        {"src": "test.mp3", "title": "Hello from an API"},
-        {"src": "hello-america-audio-20240913-063213.mp3"},
-        {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
-      ]'></bespoken-audio-player>
-
-      <h2>Example 3: changing colors, showing the playlist</h2>
-
-      <div class="customized">
-        <bespoken-audio-player id="my-audio-player"
+      <div>
+        <bespoken-audio-player id="customize-version-2"
                                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
                                playlist-visible tracks='[
                                {"src": "test.mp3", "title": "This is a test file"},
@@ -140,47 +195,36 @@
           </svg>
 
         </bespoken-audio-player>
-
       </div>
-
-      <pre class="text-xs text-yellow-100">
-&lt;bespoken-audio-player id="my-audio-player" class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
-  playlist-visible tracks='[
-    {"src": "test.mp3", "title": "This is a test file"},
-    {"src": "MISSING-FILE.mp3", "title": "This file is missing."},
-    {"src": "MISSING-FILE.mp3"},
-    {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Conclusion"}
-  ]'>
-  &lt;!-- Custom Play Icon -->
-  &lt;svg slot="play-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-    &lt;path fill="currentColor" d="M9.51,6.19v12.31l8.72-6.16-8.72-6.16Z"/>
-  &lt;/svg>
-  &lt;!-- Custom Pause Icon -->
-  &lt;svg slot="pause-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-       fill="currentColor">
-    &lt;rect x="7.31" y="6.85" width="3.69" height="11"/>
-    &lt;rect x="13.93" y="6.85" width="3.69" height="11"/>
-  &lt;/svg>
-
-  &lt;!-- Custom Previous Icon -->
-  &lt;svg slot="prev-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-    &lt;path fill="currentColor" d="M8.72,18.5V6.19L0,12.35l8.72,6.16ZM19.49,18.5V6.19l-8.72,6.16,8.72,6.16Z"/>
-  &lt;/svg>
-
-  &lt;!-- Custom Next Icon -->
-  &lt;svg slot="next-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-    &lt;path fill="currentColor" d="M15.28,6.19v12.31l8.72-6.16-8.72-6.16ZM4.51,6.19v12.31l8.72-6.16L4.51,6.19Z"/>
-  &lt;/svg>
-&lt;/bespoken-audio-player>
-</pre>
-
 
     </div>
   </div>
 </div>
 
-<script>
 
+<script>
+  const player = document.getElementById('my-audio-player');
+
+  player.addEventListener('play', () => {
+    console.log('Event: play');
+  });
+
+  player.addEventListener('pause', () => {
+    console.log('Event: pause');
+  });
+
+  player.addEventListener('ended', () => {
+    console.log('Event: ended');
+  });
+
+  player.addEventListener('trackChange', (event) => {
+    console.log('Event: trackChange', event.detail);
+  });
+
+  player.addEventListener('error', (event) => {
+    const {code, message, mediaError, trackIndex} = event.detail;
+    console.error(`Error on track ${trackIndex}:`, message);
+  });
 </script>
 </body>
 

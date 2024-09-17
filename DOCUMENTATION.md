@@ -118,26 +118,9 @@ You can replace the default text in the control buttons with custom SVG icons us
 
 ### Styling the Component
 
-Use CSS custom properties and the `::part` pseudo-element to style the component.
+The `bespoken-audio-player` component can be styled using CSS custom properties and exposed parts.
 
-```css
-bespoken-audio-player {
-  --primary-color: #ff5722;
-  --button-background: #e0e0e0;
-  --button-color: #fff;
-  --progress-bar-background: #d3d3d3;
-  --progress-bar-fill: #ff5722;
-  --progress-bar-fill-hover: #ff8a50;
-  --progress-bar-thumb: #ff5722;
-}
-
-/* Style the play/pause button */
-bespoken-audio-player::part(play-button) {
-  background-color: #ff5722;
-  color: #fff;
-  border-radius: 50%;
-}
-```
+There are many options which you can read about in the [Styling and Customization](CSS-STYLING.md) documentation.
 
 ---
 
