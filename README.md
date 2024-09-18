@@ -1,100 +1,342 @@
-# Vite module builder template with automated GitHub Pages and npm publishing
+# BespokenAudioPlayer Web Component Documentation
 
-This is a repo serves as a template workflow that uses Vite to help you create a module, exported as a Common JS module and an ES module.
+## Overview
 
-It  features a development page to easily test your module during development. The development page is preconfigured with Tailwind CSS.
+The **BespokenAudioPlayer** is a customizable and accessible web component that provides a rich audio playback experience. It supports playlists, playback controls, progress tracking, and is designed to be easily integrated into any web application.
 
-Two preconfigured GitHub Actions are also included. The first will plubish a demo page to GitHub pages every time you upload your changes to the `main` branch. The second workflow allows you to publish your module to NPM every time you push a commit to GitHub with a new version number in your package.json file.
+---
 
-You write your module in Typescript and your published module will include an automatically generated type definition file.
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic Usage](#basic-usage)
+  - [Custom Icons](#custom-icons)
+  - [Styling the Component](#styling-the-component)
+- [Attributes](#attributes)
+- [Properties](#properties)
+- [Methods](#methods)
+- [Events](#events)
+- [Slots](#slots)
+- [Styling and Customization](#styling-and-customization)
+  - [CSS Custom Properties](#css-custom-properties)
+  - [Exposed Parts](#exposed-parts)
+- [Accessibility](#accessibility)
+- [Examples](#examples)
+  - [Example 1: Basic Player](#example-1-basic-player)
+  - [Example 2: Custom Styled Player](#example-2-custom-styled-player)
+- [Browser Support](#browser-support)
+- [License](#license)
+- [Contributing](#contributing)
+- [Contact](#contact)
+
+---
+
+## Features
+
+- **Playlist Support**: Play multiple audio tracks with next and previous controls.
+- **Customizable Controls**: Replace default buttons and icons with custom SVGs.
+- **Responsive Design**: Adapts to different screen sizes and devices.
+- **Accessibility**: ARIA attributes and keyboard controls for screen readers and keyboard navigation.
+- **Playback Rate Control**: Adjust the playback speed of the audio.
+- **Progress Tracking**: Visual progress bar with time display.
+- **Customizable Appearance**: Style the component using CSS custom properties and exposed parts.
+
+---
 
 ## Installation
 
-You can use it as a template to create your own repo. You can do this by clicking the "Use this template" button on the repo's home page.
+Include the `BespokenAudioPlayer` component in your project by importing it as a module or including it directly in your HTML.
 
-This will create a new repo in your GitHub account. You can then clone the repo to your local machine and start working on your module.
+### As a Module
 
-## Run the configuration script
-
-This repo includes a configuration script that will help you update the name of your module and other settings. To run the script, you will need to have Node installed on your machine. You can download it from https://nodejs.org/en/download/.
-
-Once you have Node installed, you can run the script by opening a terminal window and navigating to the root of the repo.
-
-You will need to have two pieces of information to run the script:
-
-1. The name of your module. This needs to be a valid name for a web componet. It can only contain lowercase letters, numbers, and dashes. It must start with a letter. It cannot contain spaces or any other characters.
-2. The name of the GitHub repo URL. This is the URL of the repo you are working on. It should be in the format of `https://<USERNAME>.github.io/<REPO>/`.
-
-
-Then run the following command:
-
-```bash
-npm run project-setup
+```html
+<script type="module">
+  import { BespokenAudioPlayer } from './path/to/bespoken-audio-player.js';
+  // Initialize the component
+  if (!customElements.get('bespoken-audio-player')) {
+    customElements.define('bespoken-audio-player', BespokenAudioPlayer);
+  }
+</script>
 ```
 
-This will replace all the instances of "bespoken-audio-player" with the name of your module. It will also update the `package.json` and `vite.demo.config.mjs` files with the git repository URL.
+### Direct Inclusion
 
-The script will also run `npm install` to install the dependencies for the repo. There is [additional information about the files](#additional-information-about-the-files) at the end of the document.
+Alternatively, you can include the component script directly:
+
+```html
+<script src="./path/to/bespoken-audio-player.js"></script>
+```
+
+---
+
+## Usage
+
+### Basic Usage
+
+To use the `bespoken-audio-player` component, include it in your HTML and provide a list of tracks via the `tracks` attribute.
+
+```html
+<bespoken-audio-player
+  tracks='[
+    {"src": "path/to/track1.mp3", "title": "First Track"},
+    {"src": "path/to/track2.mp3", "title": "Second Track"}
+  ]'
+>
+</bespoken-audio-player>
+```
+
+### Custom Icons
+
+You can replace the default text in the control buttons with custom SVG icons using slots.
+
+```html
+<bespoken-audio-player
+  tracks='[
+    {"src": "path/to/track1.mp3", "title": "First Track"}
+  ]'
+>
+  <!-- Custom Play Icon -->
+  <svg slot="play-icon" viewBox="0 0 24 24">
+    <!-- SVG content for play icon -->
+  </svg>
+  <!-- Custom Pause Icon -->
+  <svg slot="pause-icon" viewBox="0 0 24 24">
+    <!-- SVG content for pause icon -->
+  </svg>
+  <!-- Custom Previous Icon -->
+  <svg slot="prev-icon" viewBox="0 0 24 24">
+    <!-- SVG content for previous icon -->
+  </svg>
+  <!-- Custom Next Icon -->
+  <svg slot="next-icon" viewBox="0 0 24 24">
+    <!-- SVG content for next icon -->
+  </svg>
+</bespoken-audio-player>
+```
+
+### Styling the Component
+
+The `bespoken-audio-player` component can be styled using CSS custom properties and exposed parts.
+
+There are many options which you can read about in the [Styling and Customization](CSS-STYLING.md) documentation.
+
+---
+
+## Attributes
+
+- **`tracks`**: *(required)* A JSON array of track objects. Each object must have a `src` property and can optionally have a `title`.
+
+  ```html
+  tracks='[
+    {"src": "path/to/track1.mp3", "title": "First Track"},
+    {"src": "path/to/track2.mp3", "title": "Second Track"}
+  ]'
+  ```
+
+- **`playlist-visible`**: *(optional)* If present, the playlist will be displayed.
+
+  ```html
+  <bespoken-audio-player tracks='[...]' playlist-visible></bespoken-audio-player>
+  ```
+
+- **`loop`**: *(optional)* If present, the playlist will loop when it reaches the end.
+
+  ```html
+  <bespoken-audio-player tracks='[...]' loop></bespoken-audio-player>
+  ```
+
+- **`only-current-track-visible`**: *(optional)* If present, only the current track will be displayed in the playlist.
+
+  ```html
+  <bespoken-audio-player tracks='[...]' only-current-track-visible></bespoken-audio-player>
+  ```
 
 
-## How to work on your module
+## Events
 
-### Development
+- **`play`**: Fired when playback starts.
+- **`pause`**: Fired when playback is paused.
+- **`ended`**: Fired when the track ends.
+- **`trackChange`**: Fired when the current track changes. This event includes the new track index, `currentTrackIndex`, and the `track` itself.
+- **`error`**: Fired when an error occurs during playback. This event includes:•
+   - code: The error code from MediaError.code.	
+   - message: A descriptive error message.
+   - mediaError: The original MediaError object.
+   - trackIndex: The index of the track that caused the error.
+   - track: The track object ({ src, title }) that caused the error.
 
-Once your files are updated, you can run `npm run dev` to start the development server for the demo page and get to work on your module by editing the typescript file in the `/lib` directory.
+```javascript
+const player = document.querySelector('bespoken-audio-player');
+player.addEventListener('play', () => {
+  console.log('Playback started');
+});
+```
 
-The demo page imports your module from the `/lib` directory so you can test it as you work on it. The script for your demo page is in the `/demo-page-assets` directory, `demo.ts`.
+```javascript
+const player = document.querySelector('bespoken-audio-player');
+player.addEventListener('trackchange', (event) => {
+  const { currentTrackIndex, track } = event.detail;
+  console.log(`Track changed to index ${currentTrackIndex}`, track);
+});
+```
 
-### GitHub Pages
+```javascript
+player.addEventListener('error', (event) => {
+  const { code, message, mediaError, trackIndex, track } = event.detail;
+  console.error(`Error on track ${trackIndex}:`, message);
+  // You can handle the error as needed, e.g., display a custom message
+});
+```
 
-The `.github/workflows/ghpages.yml` file is the workflow that will get your demo page published as the repo's demo page. You *must* set this up in your repo for it to work. You can do this by going to the repo's settings, then to the "Pages" section. Click the "Source" dropdown and select "GitHub Actions" as shown below.
+---
 
-![GitHub Pages settings](./docs/gh-pages-settings.png)
+## Slots
 
-### NPM publishing
+- **`play-icon`**: Slot for providing a custom play icon.
+- **`pause-icon`**: Slot for providing a custom pause icon.
+- **`prev-icon`**: Slot for providing a custom previous track icon.
+- **`next-icon`**: Slot for providing a custom next track icon.
 
-In your GitHub repo, you will need a key from your NPM repository that will allow you to publish. This will be stored in your GitHub secrets for the repo. In the `.github/workflows/build.yml` file, you will need a reference to it, `secrets.NPM_TOKEN`. If you choose a different name for your secret, you will need to update the workflow file.
+---
 
-![NPM Access Tokens](./docs/npm-access-tokens.png)
+## Styling and Customization
 
-In the repo's settings, you will need to add the secret to the repo. You can do this by going to the repo's settings, then to the "Secrets and variables" section and then select the "Actions" section. Click the "New repository secret" button and add the secret as shown below.
+### CSS Custom Properties
 
-![GitHub Secrets](./docs/gh-secrets.png)
+Customize the appearance using the following CSS variables:
 
-This script only attempts to run when you change the version number in the `package.json` file. During early development, I don't set this up immediately. This means the intial push to GitHub will cause this script to fail. You can ignore this failure. Once you have set up NPM publishing, you can then update the version number in the `package.json` file and push the commit to GitHub. This will cause the script to run and publish your module to NPM.
+- **`--primary-color`**: The primary color used throughout the component.
+- **`--button-background`**: Background color of buttons.
+- **`--button-color`**: Text color of buttons.
+- **`--progress-bar-background`**: Background color of the progress bar.
+- **`--progress-bar-fill`**: Fill color of the progress bar.
+- **`--progress-bar-fill-hover`**: Fill color of the progress bar on hover.
+- **`--progress-bar-thumb`**: Color of the progress bar thumb (the draggable part).
 
-### How to disable the GitHub Pages and NPM publishing
+### Exposed Parts
 
-If you don't want to publish your demo page to GitHub Pages or your module to NPM, you can disable the workflows. I do this early in development to keep these processes running before I'm at that stage of development. You can do this by going to the repo's settings, then to the "Actions" section. Click the "Disable Actions" button as shown below.
+Style specific parts of the component using the `::part` pseudo-element:
 
-![Disable Actions](./docs/gh-action-disable-workflow.png)
+- **`play-button`**: The play/pause button.
+- **`next-button`**: The next track button.
+- **`prev-button`**: The previous track button.
+- **`progress-bar`**: The progress bar (range input).
+- **`time-display`**: The time display element.
 
-You can re-enable the workflows by clicking the "Enable Actions" button on this same screen when you are ready.
+---
 
+## Accessibility
 
-## Additional information about the files
+The `bespoken-audio-player` component is built with accessibility in mind:
 
-The configuration script should have updated all the files in the repo with the name of your module, but it is important to understand what is in the repo and how it works, keep reading.
+- **ARIA Attributes**: Uses appropriate ARIA roles and attributes to convey information to assistive technologies.
+- **Keyboard Navigation**: Supports keyboard controls for play/pause, next/previous track, and seeking.
+- **Focus Management**: Ensures focus is managed appropriately when interacting with controls.
+- **Screen Reader Support**: Provides meaningful labels and state information for screen reader users.
 
-The most important file in this repo is the `lib/bespoken-audio-player.ts` file.
+---
 
-The name of the file is important. It is the name of the module you are creating. You will need to update the name of the file and the name of the module in the file.
+## Examples
 
-* index.html - The demo page for your module. Use it to test your module. It will also serve as the demo page for your module when you publish it to GitHub Pages.
-* package.json - The package.json file for your module. You will need to update the name of the module in the file.
-* README.md - The README.md file for your module. You will need to update the name of the module in the file plus create documentation for your module.
-* vite.config.ts - The Vite configuration file for your module build process.
-* vite.demo.config.mjs - The Vite configuration file for your demo page build process for GitHub Pages.
-* lib/bespoken-audio-player.ts - The demo page imports this file to test your module. You will need to update the name of the module in the file.
+### Example 1: Basic Player
 
-For a working example, check out this repo: https://github.com/johnfmorton/progressive-share-button
+```html
+<bespoken-audio-player
+  tracks='[
+    {"src": "audio/track1.mp3", "title": "Track 1"},
+    {"src": "audio/track2.mp3", "title": "Track 2"}
+  ]'
+  playlist-visible
+  loop
+>
+</bespoken-audio-player>
+```
 
-You will see how I use "progressive-share-button" as the name of the module and the name of the file. I also use it in the `package.json` file.
+### Example 2: Custom Styled Player
 
-`lib/bespoken-audio-player.ts` is where you create the module you are working on. For this demo, it is a simple function that looks for an HTML element with the id of "messageOutput" and then sets the text of that element to the message you pass in. The file serves as a starting point for you to build your module. Ultimately, you will use Vite to create a Command JS module and a ESM module. See the `package.json` file for references to both of these.
+```html
+<bespoken-audio-player
+  tracks='[
+    {"src": "audio/song1.mp3", "title": "Song One"},
+    {"src": "audio/song2.mp3", "title": "Song Two"}
+  ]'
+  playlist-visible
+>
+  <!-- Custom Icons -->
+  <svg slot="play-icon" viewBox="0 0 24 24">
+    <!-- SVG content for play icon -->
+  </svg>
+  <svg slot="pause-icon" viewBox="0 0 24 24">
+    <!-- SVG content for pause icon -->
+  </svg>
+  <svg slot="prev-icon" viewBox="0 0 24 24">
+    <!-- SVG content for previous icon -->
+  </svg>
+  <svg slot="next-icon" viewBox="0 0 24 24">
+    <!-- SVG content for next icon -->
+  </svg>
+</bespoken-audio-player>
 
-The other imporatnt page is the `index.html` file. This is the demo page for your module. It includes the `demo-page-assets/demo.ts` file which is where you will write the code to test your module. This page is using Vite for development and the build process.
+<style>
+  bespoken-audio-player {
+    --primary-color: #4caf50;
+    --button-background: #fff;
+    --button-color: #4caf50;
+    --progress-bar-background: #e0e0e0;
+    --progress-bar-fill: #4caf50;
+    --progress-bar-fill-hover: #81c784;
+    --progress-bar-thumb: #4caf50;
+  }
 
-You can see the demo page for this repo at:
+  /* Style the play/pause button */
+  bespoken-audio-player::part(play-button) {
+    background-color: #4caf50;
+    color: #fff;
+    border-radius: 50%;
+  }
 
-https://johnfmorton.github.io/bespoken-audio-player/
+  /* Style the time display */
+  bespoken-audio-player::part(time-display) {
+    color: #4caf50;
+    font-weight: bold;
+  }
+</style>
+```
+
+---
+
+## Browser Support
+
+The `bespoken-audio-player` component is built using standard web technologies and should work in modern browsers that support:
+
+- ES6 Classes and Modules
+- Custom Elements v1
+- Shadow DOM v1
+- CSS Custom Properties
+- `@supports` at-rule (for feature detection)
+
+**Note**: Internet Explorer is not supported. For the best experience, use the latest version of your browser.
+
+---
+
+## License
+
+The `bespoken-audio-player` component is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+## Contributing
+
+Contributions are welcome! If you find any issues or have suggestions for improvements, please submit an issue or pull request to the project's repository.
+
+---
+
+## Contact
+
+For questions or support, please contact the maintainer at [email@example.com](mailto:email@example.com).
+
+---
+
+**Thank you for using the BespokenAudioPlayer component!**
