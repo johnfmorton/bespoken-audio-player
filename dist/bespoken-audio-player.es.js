@@ -4,7 +4,7 @@
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-17T20:38:44.675Z 
+ * build date: 2024-09-18T11:36:00.471Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -525,11 +525,14 @@ class BespokenAudioPlayer extends HTMLElement {
    * Loads the current track based on currentTrackIndex
    */
   loadCurrentTrack(retryCount = 0, maxRetries = 3) {
+    var _a;
     if (!this.audio) return;
     if (this.playlistData.length > 0) {
       const currentTrack = this.playlistData[this.currentTrackIndex];
       this.audio.src = currentTrack.src;
       this.audio.load();
+      const rate = parseFloat(((_a = this.playbackRateSelect) == null ? void 0 : _a.value) ?? "1");
+      this.audio.playbackRate = rate;
       this.audio.onerror = () => {
         console.error(`Failed to load audio: ${currentTrack.src}`);
         if (retryCount < maxRetries) {
@@ -541,9 +544,9 @@ class BespokenAudioPlayer extends HTMLElement {
         }
       };
       this.audio.oncanplay = () => {
-        var _a;
+        var _a2;
         console.log(`Successfully loaded: ${currentTrack.src}`);
-        (_a = this.audio) == null ? void 0 : _a.play();
+        (_a2 = this.audio) == null ? void 0 : _a2.play();
       };
     } else {
       this.audio.removeAttribute("src");
