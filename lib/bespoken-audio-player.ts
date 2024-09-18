@@ -677,6 +677,10 @@ export class BespokenAudioPlayer extends HTMLElement {
             const currentTrack = this.playlistData[this.currentTrackIndex];
             this.audio.src = currentTrack.src;
             this.audio.load();
+            // Apply the user's selected playback rate
+            const rate = parseFloat(this.playbackRateSelect?.value ?? '1');
+            this.audio.playbackRate = rate;
+
 
             this.audio.onerror = () => {
                 console.error(`Failed to load audio: ${currentTrack.src}`);
