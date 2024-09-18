@@ -9,7 +9,21 @@
   <script type="module" src="demo-page-assets/demo.ts"></script>
 
   <style>
-      bespoken-audio-player#my-audio-player {
+
+      /* In #customization-example we only customize the spacing around the previous and next buttons to group them together */
+      bespoken-audio-player#customization-example {
+          --prev-next-controls-gap: 0px;
+      }
+      bespoken-audio-player#customization-example::part(prev-button) {
+          border-radius: 2px 0 0 2px;
+      }
+      bespoken-audio-player#customization-example::part(next-button) {
+          border-radius: 0 2px 2px 0;
+          border-left: 0;
+      }
+
+      /*Example of a using far too many design options */
+      bespoken-audio-player#the-ugly-version {
           --playlist-background: aqua;
           --playlist-color: green;
           --playlist-color-error: #0b09d0; /* Midnight blue */
@@ -59,21 +73,21 @@
       }
 
       /*!* Style the previous and next buttons *!*/
-      bespoken-audio-player#my-audio-player::part(play-pause-toggle-button),
-      bespoken-audio-player#my-audio-player::part(prev-button),
-      bespoken-audio-player#my-audio-player::part(next-button) {
+      bespoken-audio-player#the-ugly-version::part(play-pause-toggle-button),
+      bespoken-audio-player#the-ugly-version::part(prev-button),
+      bespoken-audio-player#the-ugly-version::part(next-button) {
           background-color: transparent;
           padding: 2px;
       }
 
-      bespoken-audio-player#my-audio-player::part(play-pause-toggle-button):hover,
-      bespoken-audio-player#my-audio-player::part(prev-button):hover,
-      bespoken-audio-player#my-audio-player::part(next-button):hover {
+      bespoken-audio-player#the-ugly-version::part(play-pause-toggle-button):hover,
+      bespoken-audio-player#the-ugly-version::part(prev-button):hover,
+      bespoken-audio-player#the-ugly-version::part(next-button):hover {
           background-color: mediumpurple;
       }
 
       /* Style the time display */
-      bespoken-audio-player#my-audio-player::part(time-display) {
+      bespoken-audio-player#the-ugly-version::part(time-display) {
           color: #c41d7e;
           font-weight: bold;
           border: 1px solid #673ab7;
@@ -84,20 +98,6 @@
           background-color: antiquewhite;
       }
 
-      /* In #customize-version-2 we only customize the spacing around the previous and next buttons to group them together */
-
-      bespoken-audio-player#customize-version-2 {
-          --prev-next-controls-gap: 0px;
-      }
-
-      bespoken-audio-player#customize-version-2::part(prev-button) {
-          border-radius: 2px 0 0 2px;
-      }
-
-      bespoken-audio-player#customize-version-2::part(next-button) {
-          border-radius: 0 2px 2px 0;
-          border-left: 0;
-      }
 
   </style>
 
@@ -108,94 +108,235 @@
 <div class="bg-slate-50 py-10 min-h-screen prose max-w-full">
   <div class="mx-auto max-w-screen-lg p-6 lg:p-8 bg-gradient-to-br from-white to-slate-200 rounded shadow-2xl">
     <div class="mx-auto lg:mx-0">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">Demo: Bespoken Audio Player</h1>
+      <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl mb-6">Bespoken Audio Player - Demos</h1>
 
-      <div class="flex flex-row gap-2">
-        <div class="w-full">
-          <bespoken-audio-player id="my-audio-player"
-                                 class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
-                                 playlist-visible tracks='[
-           {"src": "test.mp3", "title": "This is a test file"},
-            {"src": "REMOVEDtest.mp3"},
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
-            {"src": "test.mp3", "title": "This is a test file"},
-            {"src": "test.mp3"},
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
-            {"src": "test.mp3", "title": "This is a test file"},
-            {"src": "test.mp3"},
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
-          ]'>
+      <p>The Bespoken Audio player is a web component that makes embedding audio on a website easier. This page contains
+        examples on how it can be used.</p>
 
-            <span slot="play-icon">▶️</span>
-            <span slot="pause-icon">⏸️</span>
-            <span slot="prev-icon">⏮️</span>
-            <span slot="next-icon">⏭️</span>
+      <h2>Basic usage</h2>
 
-          </bespoken-audio-player>
+      <p>Let's look at a basic usage first. The <code>tracks</code> attribute is required. The value must be formatted
+        as a valid Javascript array of objects defining each track. Each track must have a <code>src</code>. The <code>tracks</code>
+        create a <b>playlist</b> inside the player.</p>
 
-        </div>
-        <div class="w-full">
-          <bespoken-audio-player
-                  class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
-                  playlist-visible tracks='[
-           {"src": "test.mp3", "title": "This is a test file"},
-            {"src": "REMOVEDtest.mp3"},
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
-            {"src": "test.mp3", "title": "This is a test file"},
-            {"src": "test.mp3"},
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"},
-            {"src": "test.mp3", "title": "This is a test file"},
-            {"src": "test.mp3"},
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
-          ]'>
+      <pre class="text-xs whitespace-pre-line text-yellow-300">
+        &lt;bespoken-audio-player <span class="text-blue-200">tracks='[{"src": "track-1.mp3"}]'</span>>&lt;/bespoken-audio-player>
+      </pre>
 
-          </bespoken-audio-player>
-        </div>
+      <div>
+        <bespoken-audio-player tracks='[{"src": "track-1.mp3"}]'></bespoken-audio-player>
       </div>
+
+      <p>Each <code>track</code> may have a <code>title</code> as shown in the next example. This title is only useful
+        to the end user if the title is shown. We can display the playlist by including the
+        <code>playlist-visible</code></p>
+
+      <pre class="text-xs whitespace-pre-line text-yellow-300">
+        &lt;bespoken-audio-player <span
+              class="text-blue-200">playlist-visible</span> tracks='[{"src": "track-1.mp3", <span class="text-blue-200">"title": "Track One: Introducing the Bespoken Audio Player"</span>}]'>&lt;/bespoken-audio-player>
+      </pre>
+
+      <div>
+        <bespoken-audio-player playlist-visible
+                               tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"}]'></bespoken-audio-player>
+      </div>
+
+      <h2>Adding multiple tracks</h2>
+
+      <p>Unlike the native audio tag in HTML, the Bespoken Audio Player accept multiple tracks. When the playlist has
+        more than one track, a previous and next buttons are added to the player. This example also demonstrates what
+        happens if you leave out the <code>title</code> in one of the tracks. Notice that <code>track-2</code> is
+        displayed in the second spot in the playlist, which is the filename without the extension.</p>
+
+      <pre class="text-xs whitespace-pre text-yellow-300">
+&lt;bespoken-audio-player
+      playlist-visible
+      <span class="text-blue-200">tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+          {"src": "track-2.mp3"},
+          {"src": "track-3.mp3", "title": "Track Three"}]'</span>
+>&lt;/bespoken-audio-player></pre>
 
       <div>
         <bespoken-audio-player
-                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
-                only-current-track-visible tracks='[
-
-            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line"}
-          ]'>
-
-        </bespoken-audio-player>
+                playlist-visible
+                tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+                        {"src": "track-2.mp3"},
+                        {"src": "track-3.mp3", "title": "Track Three"}]'
+        ></bespoken-audio-player>
       </div>
+
+      <h2>Display only the current track</h2>
+
+      <p>If you only want to display the currently playing track, you can use the
+        <code>only-current-track-visible</code> attribute.</p>
+
+      <pre class="text-xs whitespace-pre text-yellow-300">
+  &lt;bespoken-audio-player
+        <span class="text-blue-200">only-current-track-visible</span>
+        tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+          {"src": "track-2.mp3", "title": "Track Two"},
+          {"src": "track-3.mp3", "title": "Track Three"}]'
+  >&lt;/bespoken-audio-player></pre>
 
       <div>
-        <bespoken-audio-player id="customize-version-2"
-                               class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
-                               playlist-visible tracks='[
-                               {"src": "test.mp3", "title": "This is a test file"},
-                                {"src": "MISSING-FILE.mp3", "title": "This file is missing."},
-                                {"src": "MISSING-FILE.mp3"},
-                                {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips"}
-                              ]'>
-          <!-- Custom Play Icon -->
-          <svg slot="play-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M9.51,6.19v12.31l8.72-6.16-8.72-6.16Z"/>
-          </svg>
-          <!-- Custom Pause Icon -->
-          <svg slot="pause-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-               fill="currentColor">
-            <rect x="7.31" y="6.85" width="3.69" height="11"/>
-            <rect x="13.93" y="6.85" width="3.69" height="11"/>
-          </svg>
+        <bespoken-audio-player only-current-track-visible tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+                              {"src": "track-2.mp3", "title": "Track Two"},
+                              {"src": "track-3.mp3", "title": "Track Three"}]'></bespoken-audio-player>
+      </div>
 
-          <!-- Custom Previous Icon -->
-          <svg slot="prev-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M8.72,18.5V6.19L0,12.35l8.72,6.16ZM19.49,18.5V6.19l-8.72,6.16,8.72,6.16Z"/>
-          </svg>
+      <h2>Using <code>slots</code> to change the buttons and looping content.</h2>
 
-          <!-- Custom Next Icon -->
-          <svg slot="next-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M15.28,6.19v12.31l8.72-6.16-8.72-6.16ZM4.51,6.19v12.31l8.72-6.16L4.51,6.19Z"/>
-          </svg>
+      <p>There are <code>slots</code> for the control buttons, <code>play-icon</code>, <code>pause-icon</code>, <code>prev-icon</code>,
+        <code>next-icon</code>. You can insert new icon images or text. In the following example, it simply uses text.
+        This example also shows that you can also have the playlist loop back through the playlist by adding the <code>loop</code>
+        attribute</p>
 
+      <pre class="text-xs whitespace-pre text-yellow-300">
+&lt;bespoken-audio-player
+      playlist-visible <span class="text-blue-200">loop</span>
+      tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+          {"src": "track-2.mp3", "title": "Track Two"},
+          {"src": "track-3.mp3", "title": "Track Three"}]'
+>
+        <span class="text-blue-200">&lt;span slot="play-icon">Play&lt;/span>
+        &lt;span slot="pause-icon">Stop&lt;/span>
+        &lt;span slot="prev-icon">Prev&lt;/span>
+        &lt;span slot="next-icon">Next&lt;/span></span>
+&lt;/bespoken-audio-player></pre>
+
+      <div>
+        <bespoken-audio-player playlist-visible loop tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+                              {"src": "track-2.mp3", "title": "Track Two"},
+                              {"src": "track-3.mp3", "title": "Track Three"}]'>
+          <span slot="play-icon">Play</span>
+          <span slot="pause-icon">Stop</span>
+          <span slot="prev-icon">Prev</span>
+          <span slot="next-icon">Next</span>
         </bespoken-audio-player>
       </div>
+
+
+      <h2>Handling errors and custom events</h2>
+
+      <p>If there is an error in retrieving a track, when the playhead gets to that track, it will be skipped over in
+        the playlist.</p>
+
+      <p>The player also broadcast custom events. Open your dev console to see the custom messages attached to the
+        following player, which has the id of <code>event-example</code>. The code sample includes the basic script that
+        is listening for the events.</p>
+
+      <pre class="text-xs whitespace-pre text-yellow-300">
+&lt;bespoken-audio-player
+      <span class="text-blue-200">id="event-example"</span>
+      playlist-visible
+      tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+          <span class="text-red-400">{"src": "missing-track.mp3", "title": "This track is missing from the filesystem"},</span>
+          {"src": "track-3.mp3", "title": "Track Three"}]'
+>
+&lt;/bespoken-audio-player>
+<span class="text-blue-200">&LT;script>
+  const player = document.getElementById('event-example');
+
+  player.addEventListener('play', () => {
+    console.log('Custom Bespoken Audio Event: play');
+  });
+
+  player.addEventListener('pause', () => {
+    console.log('Custom Bespoken Audio Event: pause');
+  });
+
+  player.addEventListener('ended', () => {
+    console.log('Custom Bespoken Audio Event: ended');
+  });
+
+  player.addEventListener('trackChange', (event) => {
+    console.log('Custom Bespoken Audio Event: trackChange', event.detail);
+  });
+
+  player.addEventListener('error', (event) => {
+    const { code, message, mediaError, trackIndex } = event.detail;
+    console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}:`, message);
+  });
+&LT;/script></span></pre>
+
+      <div>
+        <bespoken-audio-player playlist-visible id="event-example" tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+                                    {"src": "missing-track.mp3", "title": "This track is missing from the filesystem"},
+                                    {"src": "track-3.mp3", "title": "Track Three"}]'>
+        </bespoken-audio-player>
+      </div>
+
+
+      <!--      <div class="flex flex-row gap-2">-->
+
+
+      <!--      </div>-->
+
+      <!--      <div>-->
+      <!--        <bespoken-audio-player-->
+      <!--                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"-->
+      <!--                only-current-track-visible tracks='[-->
+
+      <!--            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line"}-->
+      <!--          ]'>-->
+
+      <!--        </bespoken-audio-player>-->
+      <!--      </div>-->
+
+
+      <h2>Customization example: the previous and next buttons</h2>
+
+      <p>The web component exposes numerous <code>:parts</code> and styling variables. One particular customization is grouping the previous and next buttons together. Below is an example of how to do that. Notice that this example also includes some
+        <a href="https://tailwindcss.com/" target="_blank" class="text-green-700">Tailwind CSS classes</a> directly on the web component to give it a border and a green background.</p>
+      <p>This player also demonstrates how titles that are too long to display on a single line, in track 2,  are treated.</p>
+      <pre class="text-xs text-yellow-300 whitespace-pre-wrap">
+&lt;style>
+   /* In <span class="text-blue-200">#customization-example</span> we only customize the spacing around the previous and next buttons to group them together */
+bespoken-audio-player<span class="text-blue-200">#customization-example</span> {
+  --prev-next-controls-gap: 0px;
+}
+bespoken-audio-player<span class="text-blue-200">#customization-example</span>::part(prev-button) {
+  border-radius: 2px 0 0 2px;
+}
+bespoken-audio-player<span class="text-blue-200">#customization-example</span>::part(next-button) {
+  border-radius: 0 2px 2px 0;
+  border-left: 0;
+}
+&lt;/style>
+&lt;bespoken-audio-player id="<span class="text-blue-200">customization-example</span>"
+     <span class="text-green-200">class="mb-6 border border-gray-300 rounded bg-green-100 block p-5 my-6"</span>
+     playlist-visible tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+            {"src": "track-2.mp3", "title": "Track 2: This title is too long to display on a single line and should wrap around to the next line if we make the text long enough. This could take quite a lot of text to demonstrate this feature."},
+            {"src": "track-3.mp3", "title": "Track Three"}]'>
+&lt;/bespoken-audio-player></pre>
+
+
+      <bespoken-audio-player id="customization-example"
+                             class="mb-6 border border-gray-300 rounded bg-green-100 block p-5 my-6"
+                             playlist-visible tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+                                    {"src": "track-2.mp3", "title": "Track 2: This title is too long to display on a single line and should wrap around to the next line if we make the text long enough. This could take quite a lot of text to demonstrate this feature."},
+                                    {"src": "track-3.mp3", "title": "Track Three"}]'>
+      </bespoken-audio-player>
+
+
+      <h2>Getting ugly</h2>
+
+      <p>Finally, we close with an incredibly ugly example of what's possible with the styling options. View the page source of this page and look for the styles applied to the player with the id of <code>#the-ugly-version</code>.</p>
+                <div class="w-full">
+                <bespoken-audio-player id="the-ugly-version"
+                                       class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
+                                       playlist-visible tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+                                    {"src": "missing-track.mp3", "title": "This track is missing from the filesystem"},
+                                    {"src": "track-3.mp3", "title": "Track Three"}]'>
+
+                  <span slot="play-icon">▶️</span>
+                  <span slot="pause-icon">⏸️</span>
+                  <span slot="prev-icon">⏮️</span>
+                  <span slot="next-icon">⏭️</span>
+
+                </bespoken-audio-player>
+
+              </div>
 
     </div>
   </div>
@@ -203,27 +344,27 @@
 
 
 <script>
-  const player = document.getElementById('my-audio-player');
+  const player = document.getElementById('event-example');
 
   player.addEventListener('play', () => {
-    console.log('Event: play');
+    console.log('Custom Bespoken Audio Event: play');
   });
 
   player.addEventListener('pause', () => {
-    console.log('Event: pause');
+    console.log('Custom Bespoken Audio Event: pause');
   });
 
   player.addEventListener('ended', () => {
-    console.log('Event: ended');
+    console.log('Custom Bespoken Audio Event: ended');
   });
 
   player.addEventListener('trackChange', (event) => {
-    console.log('Event: trackChange', event.detail);
+    console.log('Custom Bespoken Audio Event: trackChange', event.detail);
   });
 
   player.addEventListener('error', (event) => {
     const {code, message, mediaError, trackIndex} = event.detail;
-    console.error(`Error on track ${trackIndex}:`, message);
+    console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}:`, message);
   });
 </script>
 </body>

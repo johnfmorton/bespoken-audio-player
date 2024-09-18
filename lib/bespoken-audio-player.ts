@@ -35,6 +35,9 @@ export class BespokenAudioPlayer extends HTMLElement {
     private isLoopEnabled: boolean;
     private isOnlyCurrentTrackVisible: boolean;
 
+    // Container for the previous and next buttons
+    private prevNextContainer: HTMLDivElement | undefined
+
     // Is the current track the last track in the playlist?
     // This is used when there is a playlist and the last track has an error
     // to prevent looping back to the first track
@@ -289,8 +292,8 @@ export class BespokenAudioPlayer extends HTMLElement {
         controlsContainer.setAttribute('role', 'group');
         controlsContainer.setAttribute('aria-label', 'Audio Player Controls');
 
-        const prevNextContainer = document.createElement('div');
-        prevNextContainer.setAttribute('class', 'prev-next-container');
+        this.prevNextContainer = document.createElement('div');
+        this.prevNextContainer.setAttribute('class', 'prev-next-container');
 
         // Helper function to create SVG icons with <use>
         const createIcon = (iconId: string): SVGSVGElement => {
@@ -337,7 +340,6 @@ export class BespokenAudioPlayer extends HTMLElement {
             this.playPauseButton.appendChild(pauseIconSlot);
         }
 
-
         this.playPauseButton.appendChild(playIconSlot);
         this.playPauseButton.appendChild(pauseIconSlot);
 
@@ -362,7 +364,7 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         this.prevButton.appendChild(prevIconSlot);
         this.prevButton.addEventListener('click', () => this.prevTrack());
-        prevNextContainer.appendChild(this.prevButton);
+        this.prevNextContainer.appendChild(this.prevButton);
 
         // Next track button
         this.nextButton = document.createElement('button');
@@ -381,10 +383,10 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         this.nextButton.appendChild(nextIconSlot);
         this.nextButton.addEventListener('click', () => this.nextTrack());
-        prevNextContainer.appendChild(this.nextButton);
+        this.prevNextContainer.appendChild(this.nextButton);
 
         // Append the prev/next container to the controls container
-        controlsContainer.appendChild(prevNextContainer);
+        controlsContainer.appendChild(this.prevNextContainer);
 
         // Playback rate select dropdown
         this.playbackRateSelect = document.createElement('select');
@@ -419,21 +421,15 @@ export class BespokenAudioPlayer extends HTMLElement {
                 this.createControls();
                 this.updateControlsState(true);
             } else {
-                // Make sure the buttons are visible
-                if (this.prevButton) {
-                    this.prevButton.style.display = '';
-                }
-                if (this.nextButton) {
-                    this.nextButton.style.display = '';
+                // Make sure the Prev and Next buttons are visible
+                if (this.prevNextContainer) {
+                    this.prevNextContainer.classList.remove('hidden');
                 }
             }
         } else {
             // Hide Prev and Next buttons if they exist
-            if (this.prevButton) {
-                this.prevButton.style.display = 'none';
-            }
-            if (this.nextButton) {
-                this.nextButton.style.display = 'none';
+            if (this.prevNextContainer) {
+                this.prevNextContainer.classList.add('hidden');
             }
         }
     }
@@ -586,10 +582,6 @@ export class BespokenAudioPlayer extends HTMLElement {
         try {
             await this.audio.play();
         } catch (error) {
-
-            const currentTrackIndex = this.currentTrackIndex;
-            const playlistData = this.playlistData;
-
             // Handle any errors that occur during playback
             console.error('Error playing audio:', error);
         }
@@ -773,7 +765,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             // console.log('Is last track:', this.isLastTrack);
             // console.log('Is loop enabled:', this.isLoopEnabled);
 
-            if(!this.isLastTrack || this.isLoopEnabled) {
+            if (!this.isLastTrack || this.isLoopEnabled) {
                 console.log('There was an error. Attempting to play the next available track.');
                 this.nextAvailableTrack();
                 this.playAudio();
@@ -1320,6 +1312,9 @@ export class BespokenAudioPlayer extends HTMLElement {
         .prev-next-container {
             display: flex;
             gap: var(--prev-next-controls-gap, var(--audio-controls-gap, var(--controls-gap, 5px)));
+        }
+        .prev-next-container.hidden {
+            display: none;
         }
         
         .controls-progress-time-container button {
