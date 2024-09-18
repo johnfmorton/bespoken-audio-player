@@ -35,6 +35,11 @@ export class BespokenAudioPlayer extends HTMLElement {
     private isLoopEnabled: boolean;
     private isOnlyCurrentTrackVisible: boolean;
 
+    // Is the current track the last track in the playlist?
+    // This is used when there is a playlist and the last track has an error
+    // to prevent looping back to the first track
+    private isLastTrack: boolean;
+
     // Keyboard shortcuts map
     private keyboardShortcuts: { [key: string]: () => void };
 
@@ -53,6 +58,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.isPlaylistVisible = false;
         this.isLoopEnabled = false;
         this.isOnlyCurrentTrackVisible = false;
+        this.isLastTrack = false;
 
         // Call initialization methods
 
@@ -569,26 +575,23 @@ export class BespokenAudioPlayer extends HTMLElement {
         // If no audio element, return
         if (!this.audio) return;
 
-        // Check if the audio source exists before playing
+        // Check if the audio source is set
+        const src = this.audio.src;
+        if (!src) {
+            console.error('No audio source available.');
+            return;
+        }
+
+        // Try to play the audio directly using the built-in `play()` method
         try {
-            const src = this.audio.src;
-
-            // If no source is set, return
-            if (!src) {
-                throw new Error('No audio source available.');
-            }
-
-            // Check if the audio file exists at the given source
-            const response = await fetch(src);
-            if (!response.ok) {
-                throw new Error(`Audio file not found: ${src}`);
-            }
-
-            // Try to play the audio
             await this.audio.play();
         } catch (error) {
+
+            const currentTrackIndex = this.currentTrackIndex;
+            const playlistData = this.playlistData;
+
+            // Handle any errors that occur during playback
             console.error('Error playing audio:', error);
-            // alert('Unable to play the audio. Please check the file and try again.');
         }
     }
 
@@ -670,35 +673,43 @@ export class BespokenAudioPlayer extends HTMLElement {
      * Loads the current track based on currentTrackIndex
      */
 
-    private loadCurrentTrack(retryCount = 0, maxRetries = 3) {
+    private loadCurrentTrack() {
+        // If no audio element, return
         if (!this.audio) return;
 
         if (this.playlistData.length > 0) {
             const currentTrack = this.playlistData[this.currentTrackIndex];
+
+            // Is this the last track in the playlist? Update the state.
+            const isLastTrack = this.currentTrackIndex === this.playlistData.length - 1;
+            if (isLastTrack) {
+                this.isLastTrack = true;
+            } else {
+                this.isLastTrack = false
+            }
+
+
             this.audio.src = currentTrack.src;
-            this.audio.load();
+            this.audio.load();  // Attempt to load the new track
+
             // Apply the user's selected playback rate
-            const rate = parseFloat(this.playbackRateSelect?.value ?? '1');
+            const rate = parseFloat(this.playbackRateSelect ? this.playbackRateSelect.value : '1');
             this.audio.playbackRate = rate;
 
+            // Reset progress bar
+            if (this.progressBar) {
+                this.progressBar.value = '0';
+                this.updateProgressBar();
+            }
 
-            this.audio.onerror = () => {
-                console.error(`Failed to load audio: ${currentTrack.src}`);
-                if (retryCount < maxRetries) {
-                    console.log(`Retrying to load: ${currentTrack.src} (${retryCount + 1}/${maxRetries})`);
-                    this.loadCurrentTrack(retryCount + 1, maxRetries); // Retry loading the current track
-                } else {
-                    console.error(`The audio file, ${currentTrack.src}, could not be loaded. Skipping to the next track.`);
-                    this.nextTrack(); // Move to the next track after max retries
-                }
-            };
+            // Update play/pause button to reflect paused state
+            this.updatePlayPauseButton();
 
-            this.audio.oncanplay = () => {
-                console.log(`Successfully loaded: ${currentTrack.src}`);
-                this.audio?.play();
-            };
+            // Update playlist UI to indicate the current track
+            this.updatePlaylistUI();
 
-            // Remaining logic for playback rate, progress bar, etc.
+            // Reset time display
+            this.updateTimeDisplay();
         } else {
             this.audio.removeAttribute('src');
             this.updateControlsState(false);
@@ -714,6 +725,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         let errorCode = 0;
 
         if (error) {
+            errorCode = error.code;
             switch (error.code) {
                 case MediaError.MEDIA_ERR_ABORTED:
                     errorMessage = 'Playback was aborted by the user.';
@@ -752,10 +764,20 @@ export class BespokenAudioPlayer extends HTMLElement {
         // Update the playlist UI to disable the affected track button
         this.updatePlaylistUI();
 
-        // Attempt to move to the next available track
+        // Attempt to move to the next available track unless it's the last track.
         if (this.hasNextAvailableTrack()) {
-            this.nextAvailableTrack();
-            this.playAudio();
+            // console.log('There was an error. Attempting to play the next available track.');
+            // console.log('Current track index:', this.currentTrackIndex);
+            // console.log('Playlist data:', this.playlistData);
+            // console.log('Track error states:', this.trackErrorStates);
+            // console.log('Is last track:', this.isLastTrack);
+            // console.log('Is loop enabled:', this.isLoopEnabled);
+
+            if(!this.isLastTrack || this.isLoopEnabled) {
+                console.log('There was an error. Attempting to play the next available track.');
+                this.nextAvailableTrack();
+                this.playAudio();
+            }
         } else {
             // No available tracks left
             this.updateControlsState(false);
@@ -899,25 +921,34 @@ export class BespokenAudioPlayer extends HTMLElement {
      */
     private onTrackEnded() {
         if (this.playlistData.length > 1) {
-            if (this.currentTrackIndex < this.playlistData.length - 1) {
-                // Move to the next track
+
+            // If there are more tracks in the playlist
+            if (this.currentTrackIndex < this.playlistData.length - 1 && !this.isLastTrack) {
                 this.currentTrackIndex++;
                 this.loadCurrentTrack();
+
                 this.playAudio(); // Automatically play the next track
-                this.dispatchTrackChangeEvent(this.currentTrackIndex);
-            } else if (this.isLoopEnabled) {
-                // Loop back to the first track
-                this.currentTrackIndex = 0;
-                this.loadCurrentTrack();
-                this.playAudio(); // Automatically play the first track
             } else {
-                // Do not loop; stop playback
-                this.updatePlayPauseButton();
+                // This is the last track, don't loop if there's an error
+                if (this.audio?.error) {
+                    console.error(`Error on the last track: ${this.playlistData[this.currentTrackIndex].src}`);
+                    this.updatePlayPauseButton();
+                } else if (this.isLoopEnabled) {
+                    // Loop back to the first track if loop is enabled and no error
+                    this.currentTrackIndex = 0;
+                    this.loadCurrentTrack();
+                    this.playAudio(); // Automatically play the first track
+                } else {
+
+                    // Don't loop back, just stop
+                    this.updatePlayPauseButton();
+                }
             }
         } else {
             // Single track; stop playback
             this.updatePlayPauseButton();
         }
+
         // Dispatch the 'ended' event
         this.dispatchEvent(new Event('ended'));
     }
