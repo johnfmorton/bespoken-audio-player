@@ -16,6 +16,8 @@ declare module "bespoken-audio-player" {
         private isPlaylistVisible;
         private isLoopEnabled;
         private isOnlyCurrentTrackVisible;
+        private prevNextContainer;
+        private isLastTrack;
         private keyboardShortcuts;
         private trackErrorStates;
         constructor();

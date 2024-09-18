@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.0.0
+ * version: v1.0.1
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-18T11:36:00.471Z 
+ * build date: 2024-09-18T21:47:49.570Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
@@ -43,6 +43,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       __publicField(this, "isPlaylistVisible");
       __publicField(this, "isLoopEnabled");
       __publicField(this, "isOnlyCurrentTrackVisible");
+      // Container for the previous and next buttons
+      __publicField(this, "prevNextContainer");
+      // Is the current track the last track in the playlist?
+      // This is used when there is a playlist and the last track has an error
+      // to prevent looping back to the first track
+      __publicField(this, "isLastTrack");
       // Keyboard shortcuts map
       __publicField(this, "keyboardShortcuts");
       // Add to your class properties
@@ -54,6 +60,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.isPlaylistVisible = false;
       this.isLoopEnabled = false;
       this.isOnlyCurrentTrackVisible = false;
+      this.isLastTrack = false;
       this.createPlayerContainer();
       this.createAudioElement();
       this.createPlaylist();
@@ -234,8 +241,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const controlsContainer = document.createElement("div");
       controlsContainer.setAttribute("role", "group");
       controlsContainer.setAttribute("aria-label", "Audio Player Controls");
-      const prevNextContainer = document.createElement("div");
-      prevNextContainer.setAttribute("class", "prev-next-container");
+      this.prevNextContainer = document.createElement("div");
+      this.prevNextContainer.setAttribute("class", "prev-next-container");
       const createIcon = (iconId) => {
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", "14");
@@ -282,7 +289,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
       this.prevButton.appendChild(prevIconSlot);
       this.prevButton.addEventListener("click", () => this.prevTrack());
-      prevNextContainer.appendChild(this.prevButton);
+      this.prevNextContainer.appendChild(this.prevButton);
       this.nextButton = document.createElement("button");
       this.nextButton.setAttribute("part", "next-button");
       this.nextButton.setAttribute("aria-label", "Next Track");
@@ -293,8 +300,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
       this.nextButton.appendChild(nextIconSlot);
       this.nextButton.addEventListener("click", () => this.nextTrack());
-      prevNextContainer.appendChild(this.nextButton);
-      controlsContainer.appendChild(prevNextContainer);
+      this.prevNextContainer.appendChild(this.nextButton);
+      controlsContainer.appendChild(this.prevNextContainer);
       this.playbackRateSelect = document.createElement("select");
       this.playbackRateSelect.setAttribute("aria-label", "Playback Speed");
       const playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -322,19 +329,13 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           this.createControls();
           this.updateControlsState(true);
         } else {
-          if (this.prevButton) {
-            this.prevButton.style.display = "";
-          }
-          if (this.nextButton) {
-            this.nextButton.style.display = "";
+          if (this.prevNextContainer) {
+            this.prevNextContainer.classList.remove("hidden");
           }
         }
       } else {
-        if (this.prevButton) {
-          this.prevButton.style.display = "none";
-        }
-        if (this.nextButton) {
-          this.nextButton.style.display = "none";
+        if (this.prevNextContainer) {
+          this.prevNextContainer.classList.add("hidden");
         }
       }
     }
@@ -450,15 +451,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     async playAudio() {
       if (!this.audio) return;
+      const src = this.audio.src;
+      if (!src) {
+        console.error("No audio source available.");
+        return;
+      }
       try {
-        const src = this.audio.src;
-        if (!src) {
-          throw new Error("No audio source available.");
-        }
-        const response = await fetch(src);
-        if (!response.ok) {
-          throw new Error(`Audio file not found: ${src}`);
-        }
         await this.audio.play();
       } catch (error) {
         console.error("Error playing audio:", error);
@@ -528,30 +526,27 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     /**
      * Loads the current track based on currentTrackIndex
      */
-    loadCurrentTrack(retryCount = 0, maxRetries = 3) {
-      var _a;
+    loadCurrentTrack() {
       if (!this.audio) return;
       if (this.playlistData.length > 0) {
         const currentTrack = this.playlistData[this.currentTrackIndex];
+        const isLastTrack = this.currentTrackIndex === this.playlistData.length - 1;
+        if (isLastTrack) {
+          this.isLastTrack = true;
+        } else {
+          this.isLastTrack = false;
+        }
         this.audio.src = currentTrack.src;
         this.audio.load();
-        const rate = parseFloat(((_a = this.playbackRateSelect) == null ? void 0 : _a.value) ?? "1");
+        const rate = parseFloat(this.playbackRateSelect ? this.playbackRateSelect.value : "1");
         this.audio.playbackRate = rate;
-        this.audio.onerror = () => {
-          console.error(`Failed to load audio: ${currentTrack.src}`);
-          if (retryCount < maxRetries) {
-            console.log(`Retrying to load: ${currentTrack.src} (${retryCount + 1}/${maxRetries})`);
-            this.loadCurrentTrack(retryCount + 1, maxRetries);
-          } else {
-            console.error(`The audio file, ${currentTrack.src}, could not be loaded. Skipping to the next track.`);
-            this.nextTrack();
-          }
-        };
-        this.audio.oncanplay = () => {
-          var _a2;
-          console.log(`Successfully loaded: ${currentTrack.src}`);
-          (_a2 = this.audio) == null ? void 0 : _a2.play();
-        };
+        if (this.progressBar) {
+          this.progressBar.value = "0";
+          this.updateProgressBar();
+        }
+        this.updatePlayPauseButton();
+        this.updatePlaylistUI();
+        this.updateTimeDisplay();
       } else {
         this.audio.removeAttribute("src");
         this.updateControlsState(false);
@@ -566,6 +561,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       let errorMessage = "An unknown error occurred while loading the audio.";
       let errorCode = 0;
       if (error) {
+        errorCode = error.code;
         switch (error.code) {
           case MediaError.MEDIA_ERR_ABORTED:
             errorMessage = "Playback was aborted by the user.";
@@ -598,8 +594,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.trackErrorStates[this.currentTrackIndex] = true;
       this.updatePlaylistUI();
       if (this.hasNextAvailableTrack()) {
-        this.nextAvailableTrack();
-        this.playAudio();
+        if (!this.isLastTrack || this.isLoopEnabled) {
+          console.log("There was an error. Attempting to play the next available track.");
+          this.nextAvailableTrack();
+          this.playAudio();
+        }
       } else {
         this.updateControlsState(false);
         console.warn("No available tracks to play.");
@@ -713,18 +712,23 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * Handles the end of a track
      */
     onTrackEnded() {
+      var _a;
       if (this.playlistData.length > 1) {
-        if (this.currentTrackIndex < this.playlistData.length - 1) {
+        if (this.currentTrackIndex < this.playlistData.length - 1 && !this.isLastTrack) {
           this.currentTrackIndex++;
           this.loadCurrentTrack();
           this.playAudio();
-          this.dispatchTrackChangeEvent(this.currentTrackIndex);
-        } else if (this.isLoopEnabled) {
-          this.currentTrackIndex = 0;
-          this.loadCurrentTrack();
-          this.playAudio();
         } else {
-          this.updatePlayPauseButton();
+          if ((_a = this.audio) == null ? void 0 : _a.error) {
+            console.error(`Error on the last track: ${this.playlistData[this.currentTrackIndex].src}`);
+            this.updatePlayPauseButton();
+          } else if (this.isLoopEnabled) {
+            this.currentTrackIndex = 0;
+            this.loadCurrentTrack();
+            this.playAudio();
+          } else {
+            this.updatePlayPauseButton();
+          }
         }
       } else {
         this.updatePlayPauseButton();
@@ -1042,6 +1046,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         .prev-next-container {
             display: flex;
             gap: var(--prev-next-controls-gap, var(--audio-controls-gap, var(--controls-gap, 5px)));
+        }
+        .prev-next-container.hidden {
+            display: none;
         }
         
         .controls-progress-time-container button {
