@@ -8,28 +8,32 @@ The **BespokenAudioPlayer** is a customizable and accessible web component that 
 
 ## Table of Contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Basic Usage](#basic-usage)
-  - [Custom Icons](#custom-icons)
-  - [Styling the Component](#styling-the-component)
-- [Attributes](#attributes)
-- [Properties](#properties)
-- [Methods](#methods)
-- [Events](#events)
-- [Slots](#slots)
-- [Styling and Customization](#styling-and-customization)
-  - [CSS Custom Properties](#css-custom-properties)
-  - [Exposed Parts](#exposed-parts)
-- [Accessibility](#accessibility)
-- [Examples](#examples)
-  - [Example 1: Basic Player](#example-1-basic-player)
-  - [Example 2: Custom Styled Player](#example-2-custom-styled-player)
-- [Browser Support](#browser-support)
-- [License](#license)
-- [Contributing](#contributing)
-- [Contact](#contact)
+- [BespokenAudioPlayer Web Component Documentation](#bespokenaudioplayer-web-component-documentation)
+  - [Overview](#overview)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Installation](#installation)
+    - [From NPM](#from-npm)
+    - [As a Module](#as-a-module)
+    - [Direct Inclusion](#direct-inclusion)
+  - [Usage](#usage)
+    - [Basic Usage](#basic-usage)
+    - [Custom Icons](#custom-icons)
+    - [Styling the Component](#styling-the-component)
+  - [Attributes](#attributes)
+  - [Events](#events)
+  - [Slots](#slots)
+  - [Styling and Customization](#styling-and-customization)
+    - [CSS Custom Properties](#css-custom-properties)
+    - [Exposed Parts](#exposed-parts)
+  - [Accessibility](#accessibility)
+  - [Examples](#examples)
+    - [Example 1: Basic Player](#example-1-basic-player)
+    - [Example 2: Custom Styled Player](#example-2-custom-styled-player)
+  - [Browser Support](#browser-support)
+  - [License](#license)
+  - [Contributing](#contributing)
+  - [Contact](#contact)
 
 ---
 
@@ -49,7 +53,24 @@ The **BespokenAudioPlayer** is a customizable and accessible web component that 
 
 Include the `BespokenAudioPlayer` component in your project by importing it as a module or including it directly in your HTML.
 
+### From NPM
+
+The component can be installed from NPM. See the project page here: https://www.npmjs.com/package/bespoken-audio-player
+
+```bash
+npm i bespoken-audio-player
+```
+
+Then in your JavaScript file:
+
+```javascript
+import {initBespokenAudioPlayer} from "@js/bespoken-audio-player";
+initBespokenAudioPlayer();
+```
+
 ### As a Module
+
+You can import the component as a module in your HTML file by including the `bespoken-audio-player.js` file in your own project.
 
 ```html
 <script type="module">
@@ -161,7 +182,7 @@ There are many options which you can read about in the [Styling and Customizatio
 - **`ended`**: Fired when the track ends.
 - **`trackChange`**: Fired when the current track changes. This event includes the new track index, `currentTrackIndex`, and the `track` itself.
 - **`error`**: Fired when an error occurs during playback. This event includes:•
-   - code: The error code from MediaError.code.	
+   - code: The error code from MediaError.code.
    - message: A descriptive error message.
    - mediaError: The original MediaError object.
    - trackIndex: The index of the track that caused the error.

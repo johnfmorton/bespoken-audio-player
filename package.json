@@ -1,6 +1,6 @@
 {
     "name": "bespoken-audio-player",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.",
     "files": [
         "dist"
