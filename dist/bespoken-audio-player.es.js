@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.0.1
+ * version: v1.0.2
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-18T21:47:49.570Z 
+ * build date: 2024-09-18T21:58:07.641Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
