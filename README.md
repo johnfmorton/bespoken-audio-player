@@ -356,7 +356,7 @@ Contributions are welcome! If you find any issues or have suggestions for improv
 
 ## Contact
 
-For questions or support, please contact the maintainer at [email@example.com](mailto:email@example.com).
+For questions or support, please contact me through the options on my [Contact Page](https://supergeekery.com/contact) on my site.
 
 ---
 
