@@ -64,7 +64,7 @@ npm i bespoken-audio-player
 Then in your JavaScript file:
 
 ```javascript
-import {initBespokenAudioPlayer} from "@js/bespoken-audio-player";
+import {initBespokenAudioPlayer} from 'bespoken-audio-player';
 initBespokenAudioPlayer();
 ```
 
