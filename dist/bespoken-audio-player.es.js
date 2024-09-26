@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.0.2
+ * version: v1.0.3
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-19T14:14:04.567Z 
+ * build date: 2024-09-26T21:37:27.440Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -391,11 +391,15 @@ class BespokenAudioPlayer extends HTMLElement {
     });
     this.audio.addEventListener("play", () => {
       this.updatePlayPauseButton();
-      this.dispatchEvent(new Event("play"));
+      this.dispatchEvent(new CustomEvent("play", {
+        detail: {
+          trackIndex: this.currentTrackIndex,
+          track: this.playlistData[this.currentTrackIndex]
+        }
+      }));
     });
     this.audio.addEventListener("pause", () => {
       this.updatePlayPauseButton();
-      this.dispatchEvent(new Event("pause"));
     });
     this.audio.addEventListener("ended", () => this.onTrackEnded());
   }
@@ -439,6 +443,16 @@ class BespokenAudioPlayer extends HTMLElement {
     if (this.audio.paused) {
       this.playAudio();
     } else {
+      const currentTime = this.audio.currentTime;
+      const duration = this.audio.duration;
+      this.dispatchEvent(new CustomEvent("pause", {
+        detail: {
+          trackIndex: this.currentTrackIndex,
+          track: this.playlistData[this.currentTrackIndex],
+          currentTime,
+          duration
+        }
+      }));
       this.pauseAudio();
     }
   }
@@ -491,8 +505,13 @@ class BespokenAudioPlayer extends HTMLElement {
   nextTrack() {
     if (this.playlistData.length > 1) {
       if (this.hasNextAvailableTrack()) {
+        const prevTrackIndex = this.currentTrackIndex;
         this.nextAvailableTrack();
-        this.dispatchTrackChangeEvent(this.currentTrackIndex);
+        const detail = {
+          currentTrackIndex: this.currentTrackIndex,
+          prevTrackIndex
+        };
+        this.dispatchTrackChangeEvent(detail);
       } else {
         console.warn("No next available tracks to play.");
       }
@@ -504,8 +523,13 @@ class BespokenAudioPlayer extends HTMLElement {
   prevTrack() {
     if (this.playlistData.length > 1) {
       if (this.hasPrevAvailableTrack()) {
+        const prevTrackIndex = this.currentTrackIndex;
         this.prevAvailableTrack();
-        this.dispatchTrackChangeEvent(this.currentTrackIndex);
+        const detail = {
+          currentTrackIndex: this.currentTrackIndex,
+          prevTrackIndex
+        };
+        this.dispatchTrackChangeEvent(detail);
       } else {
         console.warn("No previous available tracks to play.");
       }
@@ -709,6 +733,7 @@ class BespokenAudioPlayer extends HTMLElement {
    */
   onTrackEnded() {
     var _a;
+    const prevTrackIndex = this.currentTrackIndex;
     if (this.playlistData.length > 1) {
       if (this.currentTrackIndex < this.playlistData.length - 1 && !this.isLastTrack) {
         this.currentTrackIndex++;
@@ -729,7 +754,12 @@ class BespokenAudioPlayer extends HTMLElement {
     } else {
       this.updatePlayPauseButton();
     }
-    this.dispatchEvent(new Event("ended"));
+    this.dispatchEvent(new CustomEvent("ended", {
+      detail: {
+        trackIndex: prevTrackIndex,
+        track: this.playlistData[prevTrackIndex]
+      }
+    }));
   }
   /**
    * Creates or updates the playlist UI
@@ -878,12 +908,9 @@ class BespokenAudioPlayer extends HTMLElement {
     } while (prevIndex !== this.currentTrackIndex);
     console.warn("No available tracks to play.");
   }
-  dispatchTrackChangeEvent(currentTrackIndex = 0) {
+  dispatchTrackChangeEvent(detail) {
     this.dispatchEvent(new CustomEvent("trackChange", {
-      detail: {
-        currentTrackIndex: currentTrackIndex ?? 0,
-        track: this.playlistData[currentTrackIndex ?? 0]
-      }
+      detail
     }));
   }
   /**
@@ -922,29 +949,29 @@ class BespokenAudioPlayer extends HTMLElement {
             --progress-bar-fill: var(--primary-color);
             --progress-bar-thumb: var(--primary-color);
         }
-        
+
         .player-container {
             /* the container-type allows a container query resize of the children element */
             container-type: inline-size;
         }
-        
+
         .player-container.hidden {
             display: none;
         }
-        
+
         .playlist-container {
-        
+
             display: block;
             width: 100%;
             margin-bottom: 10px;
         }
-        
+
         .playlist-container ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         .playlist-container button {
             display: flex;
             flex-direction: row;
@@ -968,59 +995,59 @@ class BespokenAudioPlayer extends HTMLElement {
             overflow: hidden;
             text-overflow: ellipsis;
         }
-               
+
         .playlist-container ul {
             display: flex;
             flex-direction: column;
             gap: var(--playlist-gap-between-tracks, 5px);
         }
-        
+
         .playlist-container ul li {
             width: 100%;
         }
-        
+
         .playlist-container button.current-track {
             background-color: var(--playlist-current-background, var(--playlist-background, #f9f9f9));
             font-weight: var(--playlist-current-font-weight, bold);
             text-decoration: none;
         }
-        
+
         .playlist-container button.current-track.playing {
             font-weight: var(--playlist-current-playing-font-weight, var(--playlist-current-font-weight, bold));
             background-color: var(--playlist-current-playing-background, var(--playlist-current-background, var(--playlist-background, #fff)));
         }
-        
+
         .playlist-container svg {
             display: inline-block;
             width: 10px;
             height: 10px;
             min-width: 10px;
         }
-        
+
         .controls-progress-time-container {
             display: flex;
             gap: var(--controls-gap, 5px);
             flex-direction: row;
             align-items: center;
         }
-        
+
         /* style the default icons */
         .controls-progress-time-container button svg.default-icon {
             padding: 0;
             margin: -3px 0 -3px 0;
         }
-        
+
         .progress-container {
             display: flex;
             align-items: center;
             flex-grow: 1;
             width: 100%;
         }
-        
+
         .progress-container input[type="range"] {
             width: 100%;
         }
-        
+
         .time-display {
             line-height: 1;
             font-size: 0.625em;
@@ -1028,17 +1055,17 @@ class BespokenAudioPlayer extends HTMLElement {
             flex-shrink: 0;
             font-family: monospace;
         }
-        
+
         div[role="group"] {
             display: flex;
             justify-content: space-between;
             align-items: center;
-        
+
             gap: var(--audio-controls-gap, var(--controls-gap, 5px));
             margin-top: 0;
             align-items: center;
         }
-        
+
         .prev-next-container {
             display: flex;
             gap: var(--prev-next-controls-gap, var(--audio-controls-gap, var(--controls-gap, 5px)));
@@ -1046,7 +1073,7 @@ class BespokenAudioPlayer extends HTMLElement {
         .prev-next-container.hidden {
             display: none;
         }
-        
+
         .controls-progress-time-container button {
             padding: var(--button-padding, 3px 6px);
             font-size: 0.8rem;
@@ -1054,7 +1081,7 @@ class BespokenAudioPlayer extends HTMLElement {
             color: var(--button-color, var(--primary-color));
             cursor: pointer;
         }
-        
+
         /* set the button and select border styles */
         button, select {
             border-width: var(--button-border-size, 1px);
@@ -1062,9 +1089,9 @@ class BespokenAudioPlayer extends HTMLElement {
             border-style: solid;
             border-radius: 2px;
         }
-        
+
         /* Style the select element - the speed drop down */
-        
+
         select {
             appearance: none; /* Remove default select styles */
             -webkit-appearance: none; /* For Safari */
@@ -1076,7 +1103,7 @@ class BespokenAudioPlayer extends HTMLElement {
             border-radius: var(--select-border-radius, 2px);
             cursor: pointer;
         }
-        
+
         /* Container query for small container sizes */
         @container (max-width: 300px) {
             .controls-progress-time-container {
@@ -1086,11 +1113,11 @@ class BespokenAudioPlayer extends HTMLElement {
                 gap: 10px;
                 align-items: center;
             }
-        
+
             .progress-container {
-        
+
             }
-        
+
             .time-display {
                 margin-left: 0;
                 margin-top: 0;
@@ -1154,7 +1181,7 @@ class BespokenAudioPlayer extends HTMLElement {
           cursor: not-allowed;
           color: var(--playlist-color-error, #ca3a31); /* Optional: Change text color */
         }
-        
+
         /* Optionally, add an error icon */
         .playlist-container button:disabled svg use {
           href: '#error-icon'; /* Reference an error icon */
