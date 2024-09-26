@@ -211,14 +211,19 @@ There are many options which you can read about in the [Styling and Customizatio
 Playlists are zero-based indexes. That means the first track index is 0, and the second track index is 1.
 
 - **`play`**: Fired when playback starts.
-  - `event.detail`: { trackIndex } 
+  - `event.detail`: { trackIndex, track } 
   - trackIndex: the index of the current track
+  - track: The track object ({ src, title }) that is playing.
 - **`pause`**: Fired when playback is paused.
-  - `event.detail`: { trackIndex }
+  - `event.detail`: { trackIndex, track, currentTime, duration }
   - trackIndex: the index of the current track
+  - track: The track object ({ src, title }) that is paused.
+  - currentTime: The current playback position in seconds.
+  - duration: The total duration of the track in seconds.
 - **`ended`**: Fired when the track ends.
-  - `event.detail`: { trackIndex }
+  - `event.detail`: { trackIndex, track }
   - trackIndex: the index of the current track
+  - track: The track object ({ src, title }) that ended.
 - **`trackChange`**: Fired when the current track changes. 
   - `event.detail`: { currentTrackIndex, prevTrackIndex }
   - currentTrackIndex: the index of the current track
@@ -233,16 +238,17 @@ Playlists are zero-based indexes. That means the first track index is 0, and the
 
 ```javascript
 const player = document.querySelector('bespoken-audio-player');
-player.addEventListener('play', () => {
-  console.log('Playback started');
+player.addEventListener('play', (event) => {
+  const {trackIndex, track } = event.detail;
+  console.log(`Playback started of track ${trackIndex}: ${track.title}`);
 });
 ```
 
 ```javascript
 const player = document.querySelector('bespoken-audio-player');
 player.addEventListener('trackchange', (event) => {
-  const { currentTrackIndex, track } = event.detail;
-  console.log(`Track changed to index ${currentTrackIndex}`, track);
+  const {currentTrackIndex, prevTrackIndex} = event.detail;
+  console.log(`Track changed from prev track ${prevTrackIndex}, to the current track ${currentTrackIndex} );
 });
 ```
 

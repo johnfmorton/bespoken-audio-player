@@ -223,7 +223,7 @@
 
       <p>The player also broadcast custom events. Open your dev console to see the custom messages attached to the
         following player, which has the id of <code>event-example</code>. The code sample includes the basic script that
-        is listening for the events.</p>
+        is listening for the events. Each event has a <code>detail</code> property with useful information. See the documentation for full details.</p>
 
       <pre class="text-xs whitespace-pre text-yellow-300">
 &lt;bespoken-audio-player
@@ -237,25 +237,29 @@
 <span class="text-blue-200">&LT;script>
   const player = document.getElementById('event-example');
 
-  player.addEventListener('play', () => {
-    console.log('Custom Bespoken Audio Event: play');
+  player.addEventListener('play', (e) => {
+    const {trackIndex, track} = e.detail;
+    console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
   });
 
-  player.addEventListener('pause', () => {
-    console.log('Custom Bespoken Audio Event: pause');
+  player.addEventListener('pause', (e) => {
+    const {trackIndex, track, currentTime, duration} = e.detail;
+    console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
   });
 
-  player.addEventListener('ended', () => {
-    console.log('Custom Bespoken Audio Event: ended');
+  player.addEventListener('ended', (e) => {
+    const {trackIndex} = e.detail;
+    console.log(`Custom Bespoken Audio Event: ended, track ${trackIndex}`, e.detail);
   });
 
   player.addEventListener('trackChange', (event) => {
-    console.log('Custom Bespoken Audio Event: trackChange', event.detail);
+    const {currentTrackIndex, prevTrackIndex} = event.detail;
+    console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
   });
 
-  player.addEventListener('error', (event) => {
-    const { code, message, mediaError, trackIndex } = event.detail;
-    console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}:`, message);
+  player.addEventListener('error', (e) => {
+    const {code, message, mediaError, trackIndex} = e.detail;
+    console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}: ${message}`, e.detail);
   });
 &LT;/script></span></pre>
 
@@ -265,24 +269,6 @@
                                     {"src": "track-3.mp3", "title": "Track Three"}]'>
         </bespoken-audio-player>
       </div>
-
-
-      <!--      <div class="flex flex-row gap-2">-->
-
-
-      <!--      </div>-->
-
-      <!--      <div>-->
-      <!--        <bespoken-audio-player-->
-      <!--                class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"-->
-      <!--                only-current-track-visible tracks='[-->
-
-      <!--            {"src": "hello-britain-audio-20240913-063749.mp3", "title": "Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line Fish and chips goes on forever and forever and this line should not wrap around to a new line"}-->
-      <!--          ]'>-->
-
-      <!--        </bespoken-audio-player>-->
-      <!--      </div>-->
-
 
       <h2>Customization example: the previous and next buttons</h2>
 
@@ -347,13 +333,13 @@ bespoken-audio-player<span class="text-blue-200">#customization-example</span>::
   const player = document.getElementById('event-example');
 
   player.addEventListener('play', (e) => {
-    const {trackIndex} = e.detail;
-    console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}`, e.detail);
+    const {trackIndex, track} = e.detail;
+    console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
   });
 
   player.addEventListener('pause', (e) => {
-    const {trackIndex} = e.detail;
-    console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}`, e.detail);
+    const {trackIndex, track, currentTime, duration} = e.detail;
+    console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
   });
 
   player.addEventListener('ended', (e) => {
@@ -363,7 +349,7 @@ bespoken-audio-player<span class="text-blue-200">#customization-example</span>::
 
   player.addEventListener('trackChange', (event) => {
     const {currentTrackIndex, prevTrackIndex} = event.detail;
-    console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex} `, event.detail);
+    console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
   });
 
   player.addEventListener('error', (e) => {

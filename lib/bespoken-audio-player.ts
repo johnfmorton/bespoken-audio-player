@@ -505,7 +505,8 @@ export class BespokenAudioPlayer extends HTMLElement {
             // new CustomEvent dispatches the event with the track index
             this.dispatchEvent(new CustomEvent('play', {
                 detail: {
-                    trackIndex: this.currentTrackIndex
+                    trackIndex: this.currentTrackIndex,
+                    track: this.playlistData[this.currentTrackIndex],
                 }
             }));
         });
@@ -565,10 +566,16 @@ export class BespokenAudioPlayer extends HTMLElement {
         if (this.audio.paused) {
             this.playAudio();
         } else {
+
+            const currentTime = this.audio.currentTime;
+            const duration = this.audio.duration;
             // Dispatch the 'pause' event here because this means the user initiated the pause
             this.dispatchEvent(new CustomEvent('pause', {
                 detail: {
-                    trackIndex: this.currentTrackIndex
+                    trackIndex: this.currentTrackIndex,
+                    track: this.playlistData[this.currentTrackIndex],
+                    currentTime: currentTime,
+                    duration: duration
                 }
             }));
 
@@ -959,11 +966,11 @@ export class BespokenAudioPlayer extends HTMLElement {
         }
 
         // Dispatch the 'ended' event
-        // this.dispatchEvent(new Event('ended'));
         // new CustomEvent dispatches the event with the track index
         this.dispatchEvent(new CustomEvent('ended', {
             detail: {
-                trackIndex: prevTrackIndex
+                trackIndex: prevTrackIndex,
+                track: this.playlistData[prevTrackIndex],
             }
         }));
     }
