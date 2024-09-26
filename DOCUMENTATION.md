@@ -49,6 +49,23 @@ The **BespokenAudioPlayer** is a customizable and accessible web component that 
 
 Include the `BespokenAudioPlayer` component in your project by importing it as a module or including it directly in your HTML.
 
+### NPM
+
+You can install the component via NPM. (See https://www.npmjs.com/package/bespoken-audio-player)
+
+```bash
+npm install bespoken-audio-player
+```
+
+Then import the component in your JavaScript file:
+
+```javascript
+import {initBespokenAudioPlayer} from 'bespoken-audio-player';
+initBespokenAudioPlayer();
+```
+
+The `initBespokenAudioPlayer` function will initialize the component and make it available for use in your HTML.
+
 ### As a Module
 
 ```html
