@@ -208,16 +208,28 @@ There are many options which you can read about in the [Styling and Customizatio
 
 ## Events
 
+Playlists are zero-based indexes. That means the first track index is 0, and the second track index is 1.
+
 - **`play`**: Fired when playback starts.
+  - `event.detail`: { trackIndex } 
+  - trackIndex: the index of the current track
 - **`pause`**: Fired when playback is paused.
+  - `event.detail`: { trackIndex }
+  - trackIndex: the index of the current track
 - **`ended`**: Fired when the track ends.
-- **`trackChange`**: Fired when the current track changes. This event includes the new track index, `currentTrackIndex`, and the `track` itself.
-- **`error`**: Fired when an error occurs during playback. This event includes:•
-   - code: The error code from MediaError.code.	
-   - message: A descriptive error message.
-   - mediaError: The original MediaError object.
-   - trackIndex: The index of the track that caused the error.
-   - track: The track object ({ src, title }) that caused the error.
+  - `event.detail`: { trackIndex }
+  - trackIndex: the index of the current track
+- **`trackChange`**: Fired when the current track changes. 
+  - `event.detail`: { currentTrackIndex, prevTrackIndex }
+  - currentTrackIndex: the index of the current track
+  - prevTrackIndex: the index of the previous track
+- **`error`**: Fired when an error occurs during playback.
+  - `event.detail`: { code, message, mediaError, trackIndex, track }
+  - code: The error code from MediaError.code.	
+  - message: A descriptive error message.
+  - mediaError: The original MediaError object.
+  - trackIndex: The index of the track that caused the error.
+  - track: The track object ({ src, title }) that caused the error.
 
 ```javascript
 const player = document.querySelector('bespoken-audio-player');
