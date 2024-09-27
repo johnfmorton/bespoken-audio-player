@@ -6,7 +6,7 @@ The **Bespoken Audio Player** is a customizable and accessible web component tha
 
 ### Live examples
 
-Before you start, check out the [demo page](https://johnfmorton.github.io/bespoken-audio-player/) to see live working examples of the **Bespoken Audio Player**.
+Before you go further, check out the [demo page](https://johnfmorton.github.io/bespoken-audio-player/) to see live working examples of the **Bespoken Audio Player**.
 
 ---
 
@@ -387,10 +387,9 @@ The `bespoken-audio-player` component is released under the [MIT License](https:
 Contributions are welcome! If you find any issues or have suggestions for improvements, please submit an issue or pull request to the project's repository.
 
 ---
-
 ## Contact
 
-For questions or support, please contact the maintainer at [email@example.com](mailto:email@example.com).
+For questions or support, please contact me through the options on my [Contact Page](https://supergeekery.com/contact) on my site.
 
 ---
 

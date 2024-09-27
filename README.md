@@ -2,7 +2,11 @@
 
 ## Overview
 
-The **BespokenAudioPlayer** is a customizable and accessible web component that provides a rich audio playback experience. It supports playlists, playback controls, progress tracking, and is designed to be easily integrated into any web application.
+The **Bespoken Audio Player** is a customizable and accessible web component that provides a rich audio playback experience. It supports playlists, playback controls, progress tracking, and is designed to be easily integrated into any web application.
+
+### Live examples
+
+Before you go further, check out the [demo page](https://johnfmorton.github.io/bespoken-audio-player/) to see live working examples of the **Bespoken Audio Player**.
 
 ---
 
@@ -46,6 +50,8 @@ The **BespokenAudioPlayer** is a customizable and accessible web component that 
 - **Playback Rate Control**: Adjust the playback speed of the audio.
 - **Progress Tracking**: Visual progress bar with time display.
 - **Customizable Appearance**: Style the component using CSS custom properties and exposed parts.
+- **TypeScript support**: The component is written in TypeScript and includes type definitions for the player and events.
+
 
 ---
 
@@ -177,39 +183,33 @@ There are many options which you can read about in the [Styling and Customizatio
 
 ## Events
 
-- **`play`**: Fired when playback starts.
-- **`pause`**: Fired when playback is paused.
-- **`ended`**: Fired when the track ends.
-- **`trackChange`**: Fired when the current track changes. This event includes the new track index, `currentTrackIndex`, and the `track` itself.
-- **`error`**: Fired when an error occurs during playback. This event includes:•
-   - code: The error code from MediaError.code.
-   - message: A descriptive error message.
-   - mediaError: The original MediaError object.
-   - trackIndex: The index of the track that caused the error.
-   - track: The track object ({ src, title }) that caused the error.
+Playlists are zero-based indexes. That means the first track index is 0, and the second track index is 1. What follows is a list of events that the `bespoken-audio-player` component emits and their event types. For example , `play` event is of type `TrackPlayEvent`. The `event.detail` object contains the data that is passed along with the event.
 
-```javascript
-const player = document.querySelector('bespoken-audio-player');
-player.addEventListener('play', () => {
-  console.log('Playback started');
-});
-```
-
-```javascript
-const player = document.querySelector('bespoken-audio-player');
-player.addEventListener('trackchange', (event) => {
-  const { currentTrackIndex, track } = event.detail;
-  console.log(`Track changed to index ${currentTrackIndex}`, track);
-});
-```
-
-```javascript
-player.addEventListener('error', (event) => {
-  const { code, message, mediaError, trackIndex, track } = event.detail;
-  console.error(`Error on track ${trackIndex}:`, message);
-  // You can handle the error as needed, e.g., display a custom message
-});
-```
+- **`play: TrackPlayEvent`**: Fired when playback starts.
+  - `event.detail`: { trackIndex, track } 
+  - trackIndex: the index of the current track
+  - track: The track object ({ src, title }) that is playing.
+- **`pause: TrackPauseEvent`**: Fired when playback is paused.
+  - `event.detail`: { trackIndex, track, currentTime, duration }
+  - trackIndex: the index of the current track
+  - track: The track object ({ src, title }) that is paused.
+  - currentTime: The current playback position in seconds.
+  - duration: The total duration of the track in seconds.
+- **`ended: TrackEndedEvent`**: Fired when the track ends.
+  - `event.detail`: { trackIndex, track }
+  - trackIndex: the index of the current track
+  - track: The track object ({ src, title }) that ended.
+- **`trackChange: TrackErrorEvent`**: Fired when the current track changes. 
+  - `event.detail`: { currentTrackIndex, prevTrackIndex }
+  - currentTrackIndex: the index of the current track
+  - prevTrackIndex: the index of the previous track
+- **`error: TrackChangeEvent`**: Fired when an error occurs during playback.
+  - `event.detail`: { code, message, mediaError, trackIndex, track }
+  - code: The error code from MediaError.code.	
+  - message: A descriptive error message.
+  - mediaError: The original MediaError object.
+  - trackIndex: The index of the track that caused the error.
+  - track: The track object ({ src, title }) that caused the error.
 
 ---
 
