@@ -2,7 +2,11 @@
 
 ## Overview
 
-The **BespokenAudioPlayer** is a customizable and accessible web component that provides a rich audio playback experience. It supports playlists, playback controls, progress tracking, and is designed to be easily integrated into any web application.
+The **Bespoken Audio Player** is a customizable and accessible web component that provides a rich audio playback experience. It supports playlists, playback controls, progress tracking, and is designed to be easily integrated into any web application.
+
+### Live examples
+
+Before you start, check out the [demo page](https://johnfmorton.github.io/bespoken-audio-player/) to see live working examples of the **Bespoken Audio Player**.
 
 ---
 
@@ -42,6 +46,7 @@ The **BespokenAudioPlayer** is a customizable and accessible web component that 
 - **Playback Rate Control**: Adjust the playback speed of the audio.
 - **Progress Tracking**: Visual progress bar with time display.
 - **Customizable Appearance**: Style the component using CSS custom properties and exposed parts.
+- **TypeScript support**: The component is written in TypeScript and includes type definitions for the player and events.
 
 ---
 
@@ -189,63 +194,29 @@ There are many options which you can read about in the [Styling and Customizatio
 
 ---
 
-## Methods
-
-- **`play()`**: Starts playback of the current track.
-
-  ```javascript
-  document.querySelector('bespoken-audio-player').play();
-  ```
-
-- **`pause()`**: Pauses playback.
-
-  ```javascript
-  document.querySelector('bespoken-audio-player').pause();
-  ```
-
-- **`next()`**: Moves to the next track in the playlist.
-
-  ```javascript
-  document.querySelector('bespoken-audio-player').next();
-  ```
-
-- **`previous()`**: Moves to the previous track in the playlist.
-
-  ```javascript
-  document.querySelector('bespoken-audio-player').previous();
-  ```
-
-- **`setPlaybackRate(rate: number)`**: Sets the playback speed.
-
-  ```javascript
-  document.querySelector('bespoken-audio-player').setPlaybackRate(1.5);
-  ```
-
----
-
 ## Events
 
-Playlists are zero-based indexes. That means the first track index is 0, and the second track index is 1.
+Playlists are zero-based indexes. That means the first track index is 0, and the second track index is 1. What follows is a list of events that the `bespoken-audio-player` component emits and their event types. For example , `play` event is of type `TrackPlayEvent`. The `event.detail` object contains the data that is passed along with the event.
 
-- **`play`**: Fired when playback starts.
+- **`play: TrackPlayEvent`**: Fired when playback starts.
   - `event.detail`: { trackIndex, track } 
   - trackIndex: the index of the current track
   - track: The track object ({ src, title }) that is playing.
-- **`pause`**: Fired when playback is paused.
+- **`pause: TrackPauseEvent`**: Fired when playback is paused.
   - `event.detail`: { trackIndex, track, currentTime, duration }
   - trackIndex: the index of the current track
   - track: The track object ({ src, title }) that is paused.
   - currentTime: The current playback position in seconds.
   - duration: The total duration of the track in seconds.
-- **`ended`**: Fired when the track ends.
+- **`ended: TrackEndedEvent`**: Fired when the track ends.
   - `event.detail`: { trackIndex, track }
   - trackIndex: the index of the current track
   - track: The track object ({ src, title }) that ended.
-- **`trackChange`**: Fired when the current track changes. 
+- **`trackChange: TrackErrorEvent`**: Fired when the current track changes. 
   - `event.detail`: { currentTrackIndex, prevTrackIndex }
   - currentTrackIndex: the index of the current track
   - prevTrackIndex: the index of the previous track
-- **`error`**: Fired when an error occurs during playback.
+- **`error: TrackChangeEvent`**: Fired when an error occurs during playback.
   - `event.detail`: { code, message, mediaError, trackIndex, track }
   - code: The error code from MediaError.code.	
   - message: A descriptive error message.
@@ -254,26 +225,23 @@ Playlists are zero-based indexes. That means the first track index is 0, and the
   - track: The track object ({ src, title }) that caused the error.
 
 ```javascript
-const player = document.querySelector('bespoken-audio-player');
-player.addEventListener('play', (event) => {
-  const {trackIndex, track } = event.detail;
-  console.log(`Playback started of track ${trackIndex}: ${track.title}`);
-});
+# JavaScript example
+const player = document.getElementById('my-bespoken-audio-player');
+if (!player) {
+  player.addEventListener('play', (e) => {
+    if (e instanceof CustomEvent && e.detail) {
+      const {trackIndex, track} = e.detail;
+      console.log(`Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`);
+    }
+  });
 ```
 
-```javascript
-const player = document.querySelector('bespoken-audio-player');
-player.addEventListener('trackchange', (event) => {
-  const {currentTrackIndex, prevTrackIndex} = event.detail;
-  console.log(`Track changed from prev track ${prevTrackIndex}, to the current track ${currentTrackIndex} );
-});
-```
-
-```javascript
-player.addEventListener('error', (event) => {
-  const { code, message, mediaError, trackIndex, track } = event.detail;
-  console.error(`Error on track ${trackIndex}:`, message);
-  // You can handle the error as needed, e.g., display a custom message
+```typescript
+# TypeScript example
+const player = document.getElementById('my-bespoken-audio-player');
+player?.addEventListener('play', (e: TrackPlayEvent) => {
+    const {trackIndex, track} = e.detail;
+    console.log(`Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`);
 });
 ```
 

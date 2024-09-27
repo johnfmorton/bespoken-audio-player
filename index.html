@@ -14,15 +14,17 @@
       bespoken-audio-player#customization-example {
           --prev-next-controls-gap: 0px;
       }
+
       bespoken-audio-player#customization-example::part(prev-button) {
           border-radius: 2px 0 0 2px;
       }
+
       bespoken-audio-player#customization-example::part(next-button) {
           border-radius: 0 2px 2px 0;
           border-left: 0;
       }
 
-      /*Example of a using far too many design options */
+      /* Example of a using far too many design options */
       bespoken-audio-player#the-ugly-version {
           --playlist-background: aqua;
           --playlist-color: green;
@@ -97,10 +99,7 @@
           font-size: 0.6rem;
           background-color: antiquewhite;
       }
-
-
   </style>
-
 </head>
 
 <body>
@@ -215,15 +214,36 @@
         </bespoken-audio-player>
       </div>
 
+      <h2>Custom events, handling errors</h2>
 
-      <h2>Handling errors and custom events</h2>
+      <p>The Bespoken Audio Player emits 5 custom events. Since the player is written in TypeScript, each event is typed
+        to help with code completion.</p>
 
-      <p>If there is an error in retrieving a track, when the playhead gets to that track, it will be skipped over in
-        the playlist.</p>
+      <p>
+      <ul>
+        <li>
+          <code>play: TrackPlayEvent</code> - when a track starts playing
+        </li>
+        <li>
+          <code>pause: TrackPauseEvent</code> - when a track is paused
+        </li>
+        <li>
+          <code>ended: TrackEndedEvent</code> - when a track ends
+        </li>
+        <li>
+          <code>trackChange: TrackErrorEvent</code> - when the track changes
+        </li>
+        <li>
+          <code>error: TrackChangeEvent</code> - when there is an error loading a track
+        </li>
+      </ul>
+      </p>
 
-      <p>The player also broadcast custom events. Open your dev console to see the custom messages attached to the
-        following player, which has the id of <code>event-example</code>. The code sample includes the basic script that
-        is listening for the events. Each event has a <code>detail</code> property with useful information. See the documentation for full details.</p>
+      <p>If there is an error in retrieving a track, when the play head gets to that track, it will be skipped over in
+        the playlist. Take note of the <code>missing-track.mp3</code> in the playlist code. This is an intentional error
+        used to demonstrate how errors are handled with the player.</p>
+
+      <p>If you are writing plain Javascript, you would do something like the following example.</p>
 
       <pre class="text-xs whitespace-pre text-yellow-300">
 &lt;bespoken-audio-player
@@ -236,32 +256,33 @@
 &lt;/bespoken-audio-player>
 <span class="text-blue-200">&LT;script>
   const player = document.getElementById('event-example');
-
-  player.addEventListener('play', (e) => {
-    const {trackIndex, track} = e.detail;
-    console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
-  });
-
-  player.addEventListener('pause', (e) => {
-    const {trackIndex, track, currentTime, duration} = e.detail;
-    console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
-  });
-
-  player.addEventListener('ended', (e) => {
-    const {trackIndex} = e.detail;
-    console.log(`Custom Bespoken Audio Event: ended, track ${trackIndex}`, e.detail);
-  });
-
-  player.addEventListener('trackChange', (event) => {
-    const {currentTrackIndex, prevTrackIndex} = event.detail;
-    console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
-  });
-
-  player.addEventListener('error', (e) => {
-    const {code, message, mediaError, trackIndex} = e.detail;
-    console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}: ${message}`, e.detail);
-  });
+  if (!player) {
+    player.addEventListener('play', (e) => {
+      if (e instanceof CustomEvent && e.detail) {
+        const {trackIndex, track} = e.detail;
+        console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
+      }
+    });
+  }
 &LT;/script></span></pre>
+
+      <p>This demo page is written in Typescript, which looks more like the following snippet:</p>
+      <pre class="text-xs whitespace-pre text-blue-200">
+ player?.addEventListener('play', (e: TrackPlayEvent) => {
+    const { trackIndex, track } = e.detail;
+
+    console.log(`Custom Event: bespoken-play, track ${trackIndex}: ${track.title}`);
+
+    sendNotification({
+        title: `Play event - track ${trackIndex}: ${track.title}`,
+    });
+});</pre>
+
+      <p>The <code>sendNotification</code> is a function that is not part of Bespoken Audio Player. I use it to provide
+        visual feedback on this page of when events are fired. In production, you'd probably include a call to your
+        analytics or bug catching service at this point instead. You'll notice the playlist numbering starts at 0, not
+        1.</p>
+
 
       <div>
         <bespoken-audio-player playlist-visible id="event-example" tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
@@ -272,9 +293,13 @@
 
       <h2>Customization example: the previous and next buttons</h2>
 
-      <p>The web component exposes numerous <code>:parts</code> and styling variables. One particular customization is grouping the previous and next buttons together. Below is an example of how to do that. Notice that this example also includes some
-        <a href="https://tailwindcss.com/" target="_blank" class="text-green-700">Tailwind CSS classes</a> directly on the web component to give it a border and a green background.</p>
-      <p>This player also demonstrates how titles that are too long to display on a single line, in track 2,  are treated.</p>
+      <p>The web component exposes numerous <code>:parts</code> and styling variables. One particular customization is
+        grouping the previous and next buttons together. Below is an example of how to do that. Notice that this example
+        also includes some
+        <a href="https://tailwindcss.com/" target="_blank" class="text-green-700">Tailwind CSS classes</a> directly on
+        the web component to give it a border and a green background.</p>
+      <p>This player also demonstrates how titles that are too long to display on a single line, in track 2, are
+        treated.</p>
       <pre class="text-xs text-yellow-300 whitespace-pre-wrap">
 &lt;style>
    /* In <span class="text-blue-200">#customization-example</span> we only customize the spacing around the previous and next buttons to group them together */
@@ -304,68 +329,66 @@ bespoken-audio-player<span class="text-blue-200">#customization-example</span>::
                                     {"src": "track-3.mp3", "title": "Track Three"}]'>
       </bespoken-audio-player>
 
-
       <h2>Getting ugly</h2>
 
-      <p>Finally, we close with an incredibly ugly example of what's possible with the styling options. View the page source of this page and look for the styles applied to the player with the id of <code>#the-ugly-version</code>.</p>
-                <div class="w-full">
-                <bespoken-audio-player id="the-ugly-version"
-                                       class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
-                                       playlist-visible tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
+      <p>Finally, we close with an incredibly ugly example of what's possible with the styling options. View the page
+        source of this page and look for the styles applied to the player with the id of <code>#the-ugly-version</code>.
+      </p>
+      <div class="w-full">
+        <bespoken-audio-player id="the-ugly-version"
+                               class="mb-6 border border-gray-300 rounded bg-slate-100 block p-5 purple-theme"
+                               playlist-visible tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"},
                                     {"src": "missing-track.mp3", "title": "This track is missing from the filesystem"},
                                     {"src": "track-3.mp3", "title": "Track Three"}]'>
-
-                  <span slot="play-icon">▶️</span>
-                  <span slot="pause-icon">⏸️</span>
-                  <span slot="prev-icon">⏮️</span>
-                  <span slot="next-icon">⏭️</span>
-
-                </bespoken-audio-player>
-
-              </div>
-
+          <span slot="play-icon">▶️</span>
+          <span slot="pause-icon">⏸️</span>
+          <span slot="prev-icon">⏮️</span>
+          <span slot="next-icon">⏭️</span>
+        </bespoken-audio-player>
+      </div>
     </div>
   </div>
 </div>
 
 
-<script>
+<script type="demo/remove-this-type">
   const player = document.getElementById('event-example');
+  if (!player) {
+    player.addEventListener('play', (e) => {
+      if (e instanceof CustomEvent && e.detail) {
+        const {trackIndex, track} = e.detail;
+        console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
+      }
+    });
 
-  player.addEventListener('play', (e) => {
-    if (e instanceof CustomEvent && e.detail) {
-      const {trackIndex, track} = e.detail;
-      console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
-    }
-  });
+    player.addEventListener('pause', (e) => {
+      if (e instanceof CustomEvent && e.detail) {
+        const {trackIndex, track, currentTime, duration} = e.detail;
+        console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
+      }
+    });
 
-  player.addEventListener('pause', (e) => {
-     if (e instanceof CustomEvent && e.detail) {
-       const {trackIndex, track, currentTime, duration} = e.detail;
-       console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
-     }
-  });
+    player.addEventListener('ended', (e) => {
+      if (e instanceof CustomEvent && e.detail) {
+        const {trackIndex} = e.detail;
+        console.log(`Custom Bespoken Audio Event: ended, track ${trackIndex}`, e.detail);
+      }
+    });
 
-  player.addEventListener('ended', (e) => {
-     if (e instanceof CustomEvent && e.detail) {
-       const {trackIndex} = e.detail;
-       console.log(`Custom Bespoken Audio Event: ended, track ${trackIndex}`, e.detail);
-     }
-  });
+    player.addEventListener('trackChange', (e) => {
+      if (e instanceof CustomEvent && e.detail) {
+        const {currentTrackIndex, prevTrackIndex} = event.detail;
+        console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
+      }
+    });
 
-  player.addEventListener('trackChange', (e) => {
-     if (e instanceof CustomEvent && e.detail) {
-       const {currentTrackIndex, prevTrackIndex} = event.detail;
-       console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
-     }
-  });
-
-  player.addEventListener('error', (e) => {
-     if (e instanceof CustomEvent && e.detail) {
-       const {code, message, mediaError, trackIndex} = e.detail;
-       console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}: ${message}`, e.detail);
-     }
-  });
+    player.addEventListener('error', (e) => {
+      if (e instanceof CustomEvent && e.detail) {
+        const {code, message, mediaError, trackIndex} = e.detail;
+        console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}: ${message}`, e.detail);
+      }
+    });
+  }
 </script>
 </body>
 
