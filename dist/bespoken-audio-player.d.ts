@@ -1,14 +1,46 @@
 declare module "bespoken-audio-player" {
+    global {
+        interface HTMLElementEventMap {
+            'play': TrackPlayEvent;
+            'pause': TrackPauseEvent;
+            'ended': TrackEndedEvent;
+            'error': TrackErrorEvent;
+            'trackChange': TrackChangeEvent;
+        }
+    }
     interface Track {
         src: string;
         title?: string;
     }
-    export interface TrackErrorEventDetail {
+    export type TrackPlayEvent = CustomEvent<TrackPlayEventDetail>;
+    export type TrackPauseEvent = CustomEvent<TrackPauseEventDetail>;
+    export type TrackEndedEvent = CustomEvent<TrackEndedEventDetail>;
+    export type TrackErrorEvent = CustomEvent<TrackErrorEventDetail>;
+    export type TrackChangeEvent = CustomEvent<TrackChangeEventDetail>;
+    interface TrackErrorEventDetail {
         code: number;
         message: string;
         mediaError: MediaError | null | undefined;
         trackIndex: number;
         track: Track;
+    }
+    interface TrackPlayEventDetail {
+        trackIndex: number;
+        track: Track;
+    }
+    interface TrackEndedEventDetail {
+        trackIndex: number;
+        track: Track;
+    }
+    interface TrackPauseEventDetail {
+        trackIndex: number;
+        track: Track;
+        currentTime: number;
+        duration: number;
+    }
+    interface TrackChangeEventDetail {
+        currentTrackIndex: number;
+        prevTrackIndex: number;
     }
     export class BespokenAudioPlayer extends HTMLElement {
         private shadow;
