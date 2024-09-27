@@ -10,6 +10,7 @@
         "type": "git",
         "url": "https://github.com/johnfmorton/bespoken-audio-player"
     },
+    "homepage": "https://johnfmorton.github.io/bespoken-audio-player/",
     "module": "./dist/bespoken-audio-player.es.js",
     "unpkg": "./dist/bespoken-audio-player.es.js",
     "types": "./dist/bespoken-audio-player.d.ts",
