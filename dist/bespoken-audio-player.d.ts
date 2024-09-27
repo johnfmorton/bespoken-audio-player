@@ -1,4 +1,15 @@
 declare module "bespoken-audio-player" {
+    interface Track {
+        src: string;
+        title?: string;
+    }
+    export interface TrackErrorEventDetail {
+        code: number;
+        message: string;
+        mediaError: MediaError | null | undefined;
+        trackIndex: number;
+        track: Track;
+    }
     export class BespokenAudioPlayer extends HTMLElement {
         private shadow;
         private playerContainer;

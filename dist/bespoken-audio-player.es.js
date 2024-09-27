@@ -4,7 +4,7 @@
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-26T21:41:50.247Z 
+ * build date: 2024-09-27T14:12:09.607Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -603,7 +603,7 @@ class BespokenAudioPlayer extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent("error", {
         detail: {
-          code: errorCode,
+          code: errorCode ? errorCode : 0,
           message: errorMessage,
           mediaError: error,
           trackIndex: this.currentTrackIndex,

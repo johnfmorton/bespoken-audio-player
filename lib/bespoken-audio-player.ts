@@ -1,3 +1,57 @@
+// Extend the HTMLElementEventMap to include the custom event
+declare global {
+  interface HTMLElementEventMap {
+    'play': TrackPlayEvent;
+    'pause': TrackPauseEvent;
+    'ended': TrackEndedEvent;
+    'error': TrackErrorEvent;
+    'trackChange': TrackChangeEvent;
+  }
+}
+
+interface Track {
+    src: string;
+    title?: string;
+}
+
+// Define the event structure
+export type TrackPlayEvent = CustomEvent<TrackPlayEventDetail>;
+export type TrackPauseEvent = CustomEvent<TrackPauseEventDetail>;
+export type TrackEndedEvent = CustomEvent<TrackEndedEventDetail>;
+export type TrackErrorEvent = CustomEvent<TrackErrorEventDetail>;
+export type TrackChangeEvent = CustomEvent<TrackChangeEventDetail>;
+
+// Define the detail structure separately
+interface TrackErrorEventDetail {
+    code: number;
+    message: string;
+    mediaError: MediaError | null | undefined; // Allow undefined for non-media errors
+    trackIndex: number;
+    track: Track;
+}
+
+interface TrackPlayEventDetail {
+    trackIndex: number;
+    track: Track;
+}
+
+interface TrackEndedEventDetail {
+    trackIndex: number;
+    track: Track;
+}
+
+interface TrackPauseEventDetail {
+    trackIndex: number;
+    track: Track;
+    currentTime: number;
+    duration: number;
+}
+
+interface TrackChangeEventDetail {
+    currentTrackIndex: number;
+    prevTrackIndex: number;
+}
+
 export class BespokenAudioPlayer extends HTMLElement {
     // Shadow DOM root
     private shadow: ShadowRoot;
@@ -503,7 +557,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         this.audio.addEventListener('play', () => {
             this.updatePlayPauseButton();
             // new CustomEvent dispatches the event with the track index
-            this.dispatchEvent(new CustomEvent('play', {
+            this.dispatchEvent(new CustomEvent<TrackPlayEventDetail>('play', {
                 detail: {
                     trackIndex: this.currentTrackIndex,
                     track: this.playlistData[this.currentTrackIndex],
@@ -570,7 +624,7 @@ export class BespokenAudioPlayer extends HTMLElement {
             const currentTime = this.audio.currentTime;
             const duration = this.audio.duration;
             // Dispatch the 'pause' event here because this means the user initiated the pause
-            this.dispatchEvent(new CustomEvent('pause', {
+            this.dispatchEvent(new CustomEvent<TrackPauseEventDetail>('pause', {
                 detail: {
                     trackIndex: this.currentTrackIndex,
                     track: this.playlistData[this.currentTrackIndex],
@@ -768,9 +822,9 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         // Dispatch the 'error' event with details
         this.dispatchEvent(
-            new CustomEvent('error', {
+            new CustomEvent<TrackErrorEventDetail>('error', {
                 detail: {
-                    code: errorCode,
+                    code: errorCode? errorCode : 0,
                     message: errorMessage,
                     mediaError: error,
                     trackIndex: this.currentTrackIndex,
@@ -967,7 +1021,7 @@ export class BespokenAudioPlayer extends HTMLElement {
 
         // Dispatch the 'ended' event
         // new CustomEvent dispatches the event with the track index
-        this.dispatchEvent(new CustomEvent('ended', {
+        this.dispatchEvent(new CustomEvent<TrackEndedEventDetail>('ended', {
             detail: {
                 trackIndex: prevTrackIndex,
                 track: this.playlistData[prevTrackIndex],
@@ -1175,7 +1229,7 @@ export class BespokenAudioPlayer extends HTMLElement {
     }
 
     private dispatchTrackChangeEvent(detail: { currentTrackIndex: number, prevTrackIndex: number }) {
-        this.dispatchEvent(new CustomEvent('trackChange', {
+        this.dispatchEvent(new CustomEvent<TrackChangeEventDetail>('trackChange', {
             detail
         }));
     }

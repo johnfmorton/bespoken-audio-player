@@ -10,7 +10,11 @@ import type { NotifyStatus } from 'simple-notify/dist/simple-notify'
 
 
 // Import the custom element and its initialization function
-import { initBespokenAudioPlayer } from '../lib/bespoken-audio-player';
+import {
+    initBespokenAudioPlayer, TrackChangeEvent,
+    TrackEndedEvent, TrackErrorEvent,
+    TrackPlayEvent,
+} from '../lib/bespoken-audio-player';
 
 // Initialize the custom element
 initBespokenAudioPlayer();
@@ -18,28 +22,29 @@ initBespokenAudioPlayer();
 
 const player = document.getElementById('my-audio-player');
 
-  player?.addEventListener('play', () => {
-    console.log('Event: play');
-      sendNotification({
-            title: 'Play event',
-      })
-  });
+// Listen for the new custom event
+player?.addEventListener('play', (e: TrackPlayEvent) => {
+    const { trackIndex, track } = e.detail;
 
-  player?.addEventListener('pause', () => {
-    console.log('Event: pause');
-      sendNotification({
-            title: 'Pause event',
-      })
-  });
+    console.log(`Custom Event: bespoken-play, track ${trackIndex}: ${track.title}`);
 
-  player?.addEventListener('ended', () => {
+    sendNotification({
+        title: `Play event - track ${trackIndex}: ${track.title}`,
+    });
+});
+
+
+
+  player?.addEventListener('ended', (e: TrackEndedEvent) => {
+      const { trackIndex, track } = e.detail;
     console.log('Event: ended');
       sendNotification({
             title: 'Ended event',
+            text: `Track ${trackIndex}: ${track.title}`,
       })
   });
 
-  player?.addEventListener('trackChange', (event) => {
+  player?.addEventListener('trackChange', (event: TrackChangeEvent ) => {
     console.log('Event: trackChange', event.detail);
 
       let currentTrackIndex = !(event.detail.currentTrackIndex) ? null : event.detail.currentTrackIndex
@@ -49,7 +54,7 @@ const player = document.getElementById('my-audio-player');
       })
   });
 
-  player?.addEventListener('error', (event) => {
+  player?.addEventListener('error', (event: TrackErrorEvent) => {
       const { message, trackIndex } = event.detail;
       console.error(`Error on track ${trackIndex}:`, message);
 

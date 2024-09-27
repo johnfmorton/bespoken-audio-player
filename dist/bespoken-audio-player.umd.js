@@ -4,7 +4,7 @@
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-26T21:41:50.247Z 
+ * build date: 2024-09-27T14:12:09.607Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
@@ -607,7 +607,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.dispatchEvent(
         new CustomEvent("error", {
           detail: {
-            code: errorCode,
+            code: errorCode ? errorCode : 0,
             message: errorMessage,
             mediaError: error,
             trackIndex: this.currentTrackIndex,

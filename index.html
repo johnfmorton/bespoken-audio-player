@@ -333,28 +333,38 @@ bespoken-audio-player<span class="text-blue-200">#customization-example</span>::
   const player = document.getElementById('event-example');
 
   player.addEventListener('play', (e) => {
-    const {trackIndex, track} = e.detail;
-    console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
+    if (e instanceof CustomEvent && e.detail) {
+      const {trackIndex, track} = e.detail;
+      console.log(`Custom Bespoken Audio Event: play, track ${trackIndex}: ${track.title}`, e.detail);
+    }
   });
 
   player.addEventListener('pause', (e) => {
-    const {trackIndex, track, currentTime, duration} = e.detail;
-    console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
+     if (e instanceof CustomEvent && e.detail) {
+       const {trackIndex, track, currentTime, duration} = e.detail;
+       console.log(`Custom Bespoken Audio Event: pause, track ${trackIndex}, time: ${currentTime}/${duration}`, e.detail);
+     }
   });
 
   player.addEventListener('ended', (e) => {
-    const {trackIndex} = e.detail;
-    console.log(`Custom Bespoken Audio Event: ended, track ${trackIndex}`, e.detail);
+     if (e instanceof CustomEvent && e.detail) {
+       const {trackIndex} = e.detail;
+       console.log(`Custom Bespoken Audio Event: ended, track ${trackIndex}`, e.detail);
+     }
   });
 
-  player.addEventListener('trackChange', (event) => {
-    const {currentTrackIndex, prevTrackIndex} = event.detail;
-    console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
+  player.addEventListener('trackChange', (e) => {
+     if (e instanceof CustomEvent && e.detail) {
+       const {currentTrackIndex, prevTrackIndex} = event.detail;
+       console.log(`Custom Bespoken Audio Event: trackChange, prev track ${prevTrackIndex}, current track ${currentTrackIndex}`, event.detail);
+     }
   });
 
   player.addEventListener('error', (e) => {
-    const {code, message, mediaError, trackIndex} = e.detail;
-    console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}: ${message}`, e.detail);
+     if (e instanceof CustomEvent && e.detail) {
+       const {code, message, mediaError, trackIndex} = e.detail;
+       console.error(`Custom Bespoken Audio Event: Error on track ${trackIndex}: ${message}`, e.detail);
+     }
   });
 </script>
 </body>
