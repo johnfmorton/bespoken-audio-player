@@ -83,7 +83,6 @@ function sendNotification({
     text?: string;
 }) {
 
-    // debugger;
     new Notify({
         showIcon: false,
         status,

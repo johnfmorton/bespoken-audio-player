@@ -593,16 +593,20 @@ export class BespokenAudioPlayer extends HTMLElement {
      * Handles keydown events for keyboard shortcuts
      * @param event KeyboardEvent
      */
-    private handleKeydown(event: KeyboardEvent) {
-        const action = this.keyboardShortcuts[event.key];
-        if (action) {
-            // If multiple players exist, only respond when focused
-            if (document.activeElement === this || !this.multiplePlayersExist()) {
-                event.preventDefault();
-                action();
-            }
-        }
-    }
+  private handleKeydown(event: KeyboardEvent) {
+      // Only handle if the event target is within the player container
+      if (!this.playerContainer || !this.playerContainer.contains(event.target as Node)) {
+      return  
+      }
+      const action = this.keyboardShortcuts[event.key]
+      if (action) {
+          // If multiple players exist, only respond when focused
+          if (document.activeElement === this || !this.multiplePlayersExist()) {
+              event.preventDefault()
+              action()
+          }
+      }
+  }
 
     /**
      * Checks if multiple instances of the player exist on the page
