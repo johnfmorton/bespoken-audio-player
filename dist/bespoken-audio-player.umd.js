@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.0.4
+ * version: v1.0.5
  * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2024-09-27T16:18:18.587Z 
+ * build date: 2025-03-08T14:40:30.903Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
@@ -425,6 +425,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * @param event KeyboardEvent
      */
     handleKeydown(event) {
+      if (!this.playerContainer || !this.playerContainer.contains(event.target)) {
+        return;
+      }
       const action = this.keyboardShortcuts[event.key];
       if (action) {
         if (document.activeElement === this || !this.multiplePlayersExist()) {
