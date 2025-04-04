@@ -228,7 +228,6 @@ export class BespokenAudioPlayer extends HTMLElement {
     }
 
     private hidePlayer(hide: boolean) {
-        // TODO: Hide the player
         if (hide) {
             this.playerContainer?.classList.add('hidden');
         } else {
@@ -596,7 +595,7 @@ export class BespokenAudioPlayer extends HTMLElement {
   private handleKeydown(event: KeyboardEvent) {
       // Only handle if the event target is within the player container
       if (!this.playerContainer || !this.playerContainer.contains(event.target as Node)) {
-      return  
+      return
       }
       const action = this.keyboardShortcuts[event.key]
       if (action) {
@@ -659,7 +658,6 @@ export class BespokenAudioPlayer extends HTMLElement {
         try {
             await this.audio.play();
         } catch (error) {
-            // Handle any errors that occur during playback
             console.error('Error playing audio:', error);
         }
     }
@@ -1573,14 +1571,19 @@ export class BespokenAudioPlayer extends HTMLElement {
     }
 }
 
-// Automatically define the custom element upon import if not already defined
-if (!customElements.get('bespoken-audio-player')) {
-    customElements.define('bespoken-audio-player', BespokenAudioPlayer);
+// Default component name
+const DEFAULT_COMPONENT_NAME = 'bespoken-audio-player';
+
+// Auto-register with default name when loaded directly (e.g., via CDN)
+if (!customElements.get(DEFAULT_COMPONENT_NAME)) {
+    customElements.define(DEFAULT_COMPONENT_NAME, BespokenAudioPlayer);
 }
 
-
-export function initBespokenAudioPlayer() {
-    if (!customElements.get('bespoken-audio-player')) {
-        customElements.define('bespoken-audio-player', BespokenAudioPlayer);
+// Export function for custom registration
+export function initBespokenAudioPlayer(componentName: string = DEFAULT_COMPONENT_NAME) {
+    if (customElements.get(componentName)) {
+        console.warn(`Custom element '${componentName}' is already defined.`);
+        return;
     }
+    customElements.define(componentName, BespokenAudioPlayer);
 }
