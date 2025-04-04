@@ -5,13 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-04-4
+
+- The `initBespokenAudioPlayer` now accepts a string, like `my-custom-audio-player` to initialize the web component with the name of your choice.
+
 ## [1.0.5] - 2025-03-08
+
 - Fixed a bug in the `handleKeydown` function that caused the Bespoken Audio Player to intercept the space bar keypress when focus was not on the audio player itself. This error only happened when a single instance of the player was on the page. If there were multiple instances, the error did not occur.
 
 ## [1.0.4] - 2024-09-27
+
 - Added TypeScript types to the emitted events. For example, the `play` event is the type `TrackPlayEvent`. See the [event section of the documentation](DOCUMENTATION.md#events) for details.
 
 ## [1.0.3] - 2024-09-26
+
 - Updated custom event to include the `detail` property for all events, not just the `error` event. See documentation for details.
 
 ## [1.0.2] - 2024-09-18

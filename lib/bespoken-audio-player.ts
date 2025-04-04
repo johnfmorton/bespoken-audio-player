@@ -1574,11 +1574,6 @@ export class BespokenAudioPlayer extends HTMLElement {
 // Default component name
 const DEFAULT_COMPONENT_NAME = 'bespoken-audio-player';
 
-// Auto-register with default name when loaded directly (e.g., via CDN)
-if (!customElements.get(DEFAULT_COMPONENT_NAME)) {
-    customElements.define(DEFAULT_COMPONENT_NAME, BespokenAudioPlayer);
-}
-
 // Export function for custom registration
 export function initBespokenAudioPlayer(componentName: string = DEFAULT_COMPONENT_NAME) {
     if (customElements.get(componentName)) {
@@ -1587,3 +1582,12 @@ export function initBespokenAudioPlayer(componentName: string = DEFAULT_COMPONEN
     }
     customElements.define(componentName, BespokenAudioPlayer);
 }
+
+// Auto-register with default name when loaded directly (e.g., via CDN)
+// Add a small delay to allow for custom initialization
+setTimeout(() => {
+    const isCustomDefined = Object.getPrototypeOf(document.createElement('div')).constructor === BespokenAudioPlayer;
+    if (!isCustomDefined && !customElements.get(DEFAULT_COMPONENT_NAME)) {
+        customElements.define(DEFAULT_COMPONENT_NAME, BespokenAudioPlayer);
+    }
+}, 0);

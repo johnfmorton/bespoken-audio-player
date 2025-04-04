@@ -12,28 +12,34 @@ Before you go further, check out the [demo page](https://johnfmorton.github.io/b
 
 ## Table of Contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Basic Usage](#basic-usage)
-  - [Custom Icons](#custom-icons)
-  - [Styling the Component](#styling-the-component)
-- [Attributes](#attributes)
-- [Properties](#properties)
-- [Methods](#methods)
-- [Events](#events)
-- [Slots](#slots)
-- [Styling and Customization](#styling-and-customization)
-  - [CSS Custom Properties](#css-custom-properties)
-  - [Exposed Parts](#exposed-parts)
-- [Accessibility](#accessibility)
-- [Examples](#examples)
-  - [Example 1: Basic Player](#example-1-basic-player)
-  - [Example 2: Custom Styled Player](#example-2-custom-styled-player)
-- [Browser Support](#browser-support)
-- [License](#license)
-- [Contributing](#contributing)
-- [Contact](#contact)
+- [BespokenAudioPlayer Web Component Documentation](#bespokenaudioplayer-web-component-documentation)
+  - [Overview](#overview)
+    - [Live examples](#live-examples)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Installation](#installation)
+    - [NPM](#npm)
+    - [As a Module](#as-a-module)
+    - [Direct Inclusion](#direct-inclusion)
+  - [Usage](#usage)
+    - [Basic Usage](#basic-usage)
+    - [Custom Icons](#custom-icons)
+    - [Styling the Component](#styling-the-component)
+  - [Attributes](#attributes)
+  - [Properties](#properties)
+  - [Events](#events)
+  - [Slots](#slots)
+  - [Styling and Customization](#styling-and-customization)
+    - [CSS Custom Properties](#css-custom-properties)
+    - [Exposed Parts](#exposed-parts)
+  - [Accessibility](#accessibility)
+  - [Examples](#examples)
+    - [Example 1: Basic Player](#example-1-basic-player)
+    - [Example 2: Custom Styled Player](#example-2-custom-styled-player)
+  - [Browser Support](#browser-support)
+  - [License](#license)
+  - [Contributing](#contributing)
+  - [Contact](#contact)
 
 ---
 
@@ -66,7 +72,17 @@ Then import the component in your JavaScript file:
 
 ```javascript
 import {initBespokenAudioPlayer} from 'bespoken-audio-player';
+
+// Default registration - will register as 'bespoken-audio-player'
 initBespokenAudioPlayer();
+
+// Or with a custom element name
+initBespokenAudioPlayer('my-custom-audio-player');
+```
+
+When using a custom name, reference your component with the custom name in your HTML:
+```html
+<my-custom-audio-player tracks='[{"src": "audio.mp3", "title": "My Audio"}]'></my-custom-audio-player>
 ```
 
 The `initBespokenAudioPlayer` function will initialize the component and make it available for use in your HTML.
@@ -199,7 +215,7 @@ There are many options which you can read about in the [Styling and Customizatio
 Playlists are zero-based indexes. That means the first track index is 0, and the second track index is 1. What follows is a list of events that the `bespoken-audio-player` component emits and their event types. For example , `play` event is of type `TrackPlayEvent`. The `event.detail` object contains the data that is passed along with the event.
 
 - **`play: TrackPlayEvent`**: Fired when playback starts.
-  - `event.detail`: { trackIndex, track } 
+  - `event.detail`: { trackIndex, track }
   - trackIndex: the index of the current track
   - track: The track object ({ src, title }) that is playing.
 - **`pause: TrackPauseEvent`**: Fired when playback is paused.
@@ -212,13 +228,13 @@ Playlists are zero-based indexes. That means the first track index is 0, and the
   - `event.detail`: { trackIndex, track }
   - trackIndex: the index of the current track
   - track: The track object ({ src, title }) that ended.
-- **`trackChange: TrackErrorEvent`**: Fired when the current track changes. 
+- **`trackChange: TrackErrorEvent`**: Fired when the current track changes.
   - `event.detail`: { currentTrackIndex, prevTrackIndex }
   - currentTrackIndex: the index of the current track
   - prevTrackIndex: the index of the previous track
 - **`error: TrackChangeEvent`**: Fired when an error occurs during playback.
   - `event.detail`: { code, message, mediaError, trackIndex, track }
-  - code: The error code from MediaError.code.	
+  - code: The error code from MediaError.code.
   - message: A descriptive error message.
   - mediaError: The original MediaError object.
   - trackIndex: The index of the track that caused the error.
