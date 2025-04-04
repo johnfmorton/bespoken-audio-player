@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.0.5
- * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
+ * version: v1.0.6
+ * description: This is a web component that makes embedding audio on a website easier.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2025-03-08T14:40:30.903Z 
+ * build date: 2025-04-04T15:03:26.797Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -1237,14 +1237,20 @@ class BespokenAudioPlayer extends HTMLElement {
     return this.playlistData;
   }
 }
-if (!customElements.get("bespoken-audio-player")) {
-  customElements.define("bespoken-audio-player", BespokenAudioPlayer);
-}
-function initBespokenAudioPlayer() {
-  if (!customElements.get("bespoken-audio-player")) {
-    customElements.define("bespoken-audio-player", BespokenAudioPlayer);
+const DEFAULT_COMPONENT_NAME = "bespoken-audio-player";
+function initBespokenAudioPlayer(componentName = DEFAULT_COMPONENT_NAME) {
+  if (customElements.get(componentName)) {
+    console.warn(`Custom element '${componentName}' is already defined.`);
+    return;
   }
+  customElements.define(componentName, BespokenAudioPlayer);
 }
+setTimeout(() => {
+  const isCustomDefined = Object.getPrototypeOf(document.createElement("div")).constructor === BespokenAudioPlayer;
+  if (!isCustomDefined && !customElements.get(DEFAULT_COMPONENT_NAME)) {
+    customElements.define(DEFAULT_COMPONENT_NAME, BespokenAudioPlayer);
+  }
+}, 0);
 export {
   BespokenAudioPlayer,
   initBespokenAudioPlayer

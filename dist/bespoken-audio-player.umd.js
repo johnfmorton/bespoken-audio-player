@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.0.5
- * description: This is a template repo that will create a Vite workflow to ease creation of Javascript modules with a dev server, GitHub Pages support and automated publishing to NPM.
+ * version: v1.0.6
+ * description: This is a web component that makes embedding audio on a website easier.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2025-03-08T14:40:30.903Z 
+ * build date: 2025-04-04T15:03:26.797Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
@@ -1241,14 +1241,20 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return this.playlistData;
     }
   }
-  if (!customElements.get("bespoken-audio-player")) {
-    customElements.define("bespoken-audio-player", BespokenAudioPlayer);
-  }
-  function initBespokenAudioPlayer() {
-    if (!customElements.get("bespoken-audio-player")) {
-      customElements.define("bespoken-audio-player", BespokenAudioPlayer);
+  const DEFAULT_COMPONENT_NAME = "bespoken-audio-player";
+  function initBespokenAudioPlayer(componentName = DEFAULT_COMPONENT_NAME) {
+    if (customElements.get(componentName)) {
+      console.warn(`Custom element '${componentName}' is already defined.`);
+      return;
     }
+    customElements.define(componentName, BespokenAudioPlayer);
   }
+  setTimeout(() => {
+    const isCustomDefined = Object.getPrototypeOf(document.createElement("div")).constructor === BespokenAudioPlayer;
+    if (!isCustomDefined && !customElements.get(DEFAULT_COMPONENT_NAME)) {
+      customElements.define(DEFAULT_COMPONENT_NAME, BespokenAudioPlayer);
+    }
+  }, 0);
   exports2.BespokenAudioPlayer = BespokenAudioPlayer;
   exports2.initBespokenAudioPlayer = initBespokenAudioPlayer;
   Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });

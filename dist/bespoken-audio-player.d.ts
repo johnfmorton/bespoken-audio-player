@@ -252,5 +252,5 @@ declare module "bespoken-audio-player" {
             title: string;
         }[];
     }
-    export function initBespokenAudioPlayer(): void;
+    export function initBespokenAudioPlayer(componentName?: string): void;
 }
