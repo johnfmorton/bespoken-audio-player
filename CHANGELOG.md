@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-06-06
+
+- Added `"types"` entry to the `"."` subpath in `package.json` `"exports"` so consumers using `moduleResolution: "bundler"` or `"node16"+` can resolve the shipped `.d.ts` instead of falling back to `any`.
+
 ## [1.0.6] - 2025-04-4
 
 - The `initBespokenAudioPlayer` now accepts a string, like `my-custom-audio-player` to initialize the web component with the name of your choice.

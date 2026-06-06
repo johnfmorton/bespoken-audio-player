@@ -1,6 +1,6 @@
 {
     "name": "bespoken-audio-player",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "This is a web component that makes embedding audio on a website easier.",
     "files": [
         "dist"
@@ -16,6 +16,7 @@
     "types": "./dist/bespoken-audio-player.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/bespoken-audio-player.d.ts",
             "import": "./dist/bespoken-audio-player.es.js",
             "require": "./dist/bespoken-audio-player.umd.js"
         }
