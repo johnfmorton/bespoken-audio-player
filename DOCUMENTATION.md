@@ -290,7 +290,7 @@ Customize the appearance using the following CSS variables:
 
 Style specific parts of the component using the `::part` pseudo-element:
 
-- **`play-button`**: The play/pause button.
+- **`play-pause-toggle-button`**: The play/pause button.
 - **`next-button`**: The next track button.
 - **`prev-button`**: The previous track button.
 - **`progress-bar`**: The progress bar (range input).
@@ -363,7 +363,7 @@ The `bespoken-audio-player` component is built with accessibility in mind:
   }
 
   /* Style the play/pause button */
-  bespoken-audio-player::part(play-button) {
+  bespoken-audio-player::part(play-pause-toggle-button) {
     background-color: #4caf50;
     color: #fff;
     border-radius: 50%;
