@@ -4,12 +4,12 @@
  * description: This is a web component that makes embedding audio on a website easier.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2026-07-29T11:22:08.830Z 
+ * build date: 2026-07-29T11:38:59.285Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-class BespokenAudioPlayer extends HTMLElement {
+const _BespokenAudioPlayer = class _BespokenAudioPlayer extends HTMLElement {
   constructor() {
     super();
     // Shadow DOM root
@@ -27,6 +27,9 @@ class BespokenAudioPlayer extends HTMLElement {
     __publicField(this, "nextButton");
     __publicField(this, "prevButton");
     __publicField(this, "playbackRateSelect");
+    __publicField(this, "muteButton");
+    __publicField(this, "volumeSlider");
+    __publicField(this, "volumeContainer");
     // Progress bar elements
     __publicField(this, "controlsProgressTimeContainer");
     // Container for progress bar and time display
@@ -69,7 +72,7 @@ class BespokenAudioPlayer extends HTMLElement {
    * attributeChangedCallback will work
    */
   static get observedAttributes() {
-    return ["tracks", "playlist-visible", "loop", "only-current-track-visible"];
+    return ["tracks", "playlist-visible", "loop", "only-current-track-visible", "volume-control"];
   }
   /**
    * Called when the component is added to the DOM
@@ -103,6 +106,8 @@ class BespokenAudioPlayer extends HTMLElement {
     } else if (name === "only-current-track-visible") {
       this.isOnlyCurrentTrackVisible = this.hasAttribute("only-current-track-visible");
       this.updatePlaylistVisibility();
+    } else if (name === "volume-control") {
+      this.updateVolumeControlVisibility();
     }
   }
   /**
@@ -298,6 +303,7 @@ class BespokenAudioPlayer extends HTMLElement {
     this.nextButton.addEventListener("click", () => this.nextTrack());
     this.prevNextContainer.appendChild(this.nextButton);
     controlsContainer.appendChild(this.prevNextContainer);
+    this.createVolumeControl(controlsContainer);
     this.playbackRateSelect = document.createElement("select");
     this.playbackRateSelect.setAttribute("aria-label", "Playback Speed");
     this.playbackRateSelect.setAttribute("part", "playback-rate-select");
@@ -342,12 +348,15 @@ class BespokenAudioPlayer extends HTMLElement {
   removeControls() {
     const controls = this.shadow.querySelector('div[role="group"]');
     if (controls) {
-      this.shadow.removeChild(controls);
+      controls.remove();
     }
     this.playPauseButton = null;
     this.prevButton = null;
     this.nextButton = null;
     this.playbackRateSelect = null;
+    this.muteButton = null;
+    this.volumeSlider = null;
+    this.volumeContainer = null;
   }
   /**
    * Updates the enabled/disabled state of controls based on the availability of tracks
@@ -368,6 +377,12 @@ class BespokenAudioPlayer extends HTMLElement {
     }
     if (this.playbackRateSelect) {
       this.playbackRateSelect.disabled = !isEnabled;
+    }
+    if (this.muteButton) {
+      this.muteButton.disabled = !isEnabled;
+    }
+    if (this.volumeSlider) {
+      this.volumeSlider.disabled = !isEnabled;
     }
     if (this.timeDisplay) {
       this.timeDisplay.textContent = isEnabled ? "0:00/0:00" : "";
@@ -546,6 +561,188 @@ class BespokenAudioPlayer extends HTMLElement {
     if (!this.audio || !this.playbackRateSelect) return;
     const rate = parseFloat(this.playbackRateSelect.value);
     this.audio.playbackRate = rate;
+  }
+  /**
+   * Detects whether the browser honors programmatic audio.volume changes.
+   * iOS reserves volume for the hardware buttons. The volume property can
+   * appear settable there (it accepts and reports a value without changing
+   * the output volume), so a read-back probe is not sufficient and the
+   * platform has to be detected instead. iPadOS 13+ masquerades as macOS,
+   * but real Macs report no touch points.
+   */
+  static supportsVolumeAdjustment() {
+    if (_BespokenAudioPlayer.volumeAdjustable === null) {
+      const ua = navigator.userAgent;
+      const isIOS = /iPhone|iPad|iPod/.test(ua) || /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+      if (isIOS) {
+        _BespokenAudioPlayer.volumeAdjustable = false;
+      } else {
+        const probe = document.createElement("audio");
+        probe.volume = 0.5;
+        _BespokenAudioPlayer.volumeAdjustable = probe.volume === 0.5;
+      }
+    }
+    return _BespokenAudioPlayer.volumeAdjustable;
+  }
+  /**
+   * Creates the mute button and volume slider when the volume-control
+   * attribute is present. The slider is omitted on devices where
+   * programmatic volume has no effect (see supportsVolumeAdjustment).
+   * @param controlsContainer The controls group to append to
+   */
+  createVolumeControl(controlsContainer) {
+    if (!this.hasAttribute("volume-control")) return;
+    this.volumeContainer = document.createElement("div");
+    this.volumeContainer.setAttribute("class", "volume-container");
+    this.volumeContainer.setAttribute("part", "volume-container");
+    this.muteButton = document.createElement("button");
+    this.muteButton.setAttribute("part", "mute-toggle-button");
+    const createVolumeIcon = (iconId) => {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "14");
+      svg.setAttribute("height", "14");
+      svg.classList.add("default-icon");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      const useElement = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      useElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconId);
+      svg.appendChild(useElement);
+      return svg;
+    };
+    const volumeIconSlot = document.createElement("slot");
+    volumeIconSlot.name = "volume-icon";
+    const mutedIconSlot = document.createElement("slot");
+    mutedIconSlot.name = "muted-icon";
+    mutedIconSlot.style.display = "none";
+    if (!this.querySelector('[slot="volume-icon"]')) {
+      volumeIconSlot.appendChild(createVolumeIcon("#volume-icon"));
+    }
+    if (!this.querySelector('[slot="muted-icon"]')) {
+      mutedIconSlot.appendChild(createVolumeIcon("#muted-icon"));
+    }
+    this.muteButton.appendChild(volumeIconSlot);
+    this.muteButton.appendChild(mutedIconSlot);
+    this.muteButton.setAttribute("aria-label", "Mute");
+    this.muteButton.setAttribute("aria-pressed", "false");
+    this.muteButton.addEventListener("click", () => this.toggleMute());
+    this.volumeContainer.appendChild(this.muteButton);
+    if (_BespokenAudioPlayer.supportsVolumeAdjustment()) {
+      this.volumeSlider = document.createElement("input");
+      this.volumeSlider.type = "range";
+      this.volumeSlider.min = "0";
+      this.volumeSlider.max = "1";
+      this.volumeSlider.step = "0.01";
+      this.volumeSlider.value = this.audio ? this.audio.volume.toString() : "1";
+      this.volumeSlider.setAttribute("part", "volume-slider");
+      this.volumeSlider.setAttribute("aria-label", "Volume");
+      this.volumeSlider.addEventListener("input", () => {
+        if (this.volumeSlider) {
+          this.setVolume(parseFloat(this.volumeSlider.value));
+        }
+      });
+      this.volumeContainer.appendChild(this.volumeSlider);
+    }
+    this.updateVolumeControlUI();
+    controlsContainer.appendChild(this.volumeContainer);
+  }
+  /**
+   * Sets the audio volume and keeps the volume UI in sync.
+   * Moving the slider above zero also unmutes.
+   * @param volume A value between 0 and 1
+   */
+  setVolume(volume) {
+    if (!this.audio) return;
+    const clamped = Math.min(1, Math.max(0, volume));
+    this.audio.volume = clamped;
+    if (clamped > 0 && this.audio.muted) {
+      this.audio.muted = false;
+    }
+    this.updateVolumeControlUI();
+    this.dispatchVolumeChangeEvent();
+  }
+  /**
+   * Toggles the muted state of the audio
+   */
+  toggleMute() {
+    if (!this.audio) return;
+    this.audio.muted = !this.audio.muted;
+    this.updateVolumeControlUI();
+    this.dispatchVolumeChangeEvent();
+  }
+  /**
+   * Updates the mute button icon/labels and slider position
+   * to match the audio element's state
+   */
+  updateVolumeControlUI() {
+    if (this.muteButton && this.audio) {
+      const muted = this.audio.muted;
+      const volumeIconSlot = this.muteButton.querySelector('slot[name="volume-icon"]');
+      const mutedIconSlot = this.muteButton.querySelector('slot[name="muted-icon"]');
+      this.muteButton.setAttribute("aria-label", muted ? "Unmute" : "Mute");
+      this.muteButton.setAttribute("aria-pressed", muted ? "true" : "false");
+      volumeIconSlot.style.display = muted ? "none" : "";
+      mutedIconSlot.style.display = muted ? "" : "none";
+    }
+    if (this.volumeSlider && this.audio) {
+      this.volumeSlider.value = this.audio.volume.toString();
+      const percent = Math.round(this.audio.volume * 100);
+      this.volumeSlider.setAttribute("aria-valuetext", `${percent}% volume`);
+      this.volumeSlider.style.setProperty("--progress", `${percent}%`);
+    }
+  }
+  /**
+   * Adds or removes the volume UI when the volume-control attribute changes
+   */
+  updateVolumeControlVisibility() {
+    const isEnabled = this.hasAttribute("volume-control");
+    if (isEnabled && !this.volumeContainer) {
+      const controlsContainer = this.shadow.querySelector('div[role="group"]');
+      if (controlsContainer && this.playbackRateSelect) {
+        this.createVolumeControl(controlsContainer);
+        if (this.volumeContainer) {
+          controlsContainer.insertBefore(this.volumeContainer, this.playbackRateSelect);
+        }
+      }
+    } else if (!isEnabled && this.volumeContainer) {
+      this.volumeContainer.remove();
+      this.volumeContainer = null;
+      this.muteButton = null;
+      this.volumeSlider = null;
+    }
+  }
+  /**
+   * Dispatches the volumeChange custom event
+   */
+  dispatchVolumeChangeEvent() {
+    if (!this.audio) return;
+    this.dispatchEvent(new CustomEvent("volumeChange", {
+      detail: {
+        volume: this.audio.volume,
+        muted: this.audio.muted
+      }
+    }));
+  }
+  /**
+   * Gets or sets the playback volume (0 to 1). Works even when the
+   * volume-control UI is not enabled.
+   */
+  get volume() {
+    return this.audio ? this.audio.volume : 1;
+  }
+  set volume(value) {
+    this.setVolume(value);
+  }
+  /**
+   * Gets or sets the muted state. Works even when the
+   * volume-control UI is not enabled.
+   */
+  get muted() {
+    return this.audio ? this.audio.muted : false;
+  }
+  set muted(value) {
+    if (!this.audio) return;
+    this.audio.muted = value;
+    this.updateVolumeControlUI();
+    this.dispatchVolumeChangeEvent();
   }
   /**
    * Loads the current track based on currentTrackIndex
@@ -942,6 +1139,12 @@ class BespokenAudioPlayer extends HTMLElement {
 
 <!-- Next Icon (Two Right-Pointing Arrows) -->
 <symbol id="next-icon" viewBox="0 0 24 24"><path d="M13.77,6v12.31l8.72-6.16-8.72-6.16ZM3,6v12.31l8.72-6.16L3,6Z"/></symbol>
+
+<!-- Volume Icon (Speaker with Sound Wave) -->
+<symbol id="volume-icon" viewBox="0 0 24 24"><path d="M4,9v6h4l5,4.5V4.5L8,9H4Z"/><path d="M15.54,8.17c1.06,.93,1.73,2.3,1.73,3.83s-.67,2.9-1.73,3.83l-1.19-1.35c.66-.58,1.08-1.44,1.08-2.48s-.42-1.9-1.08-2.48l1.19-1.35Z"/></symbol>
+
+<!-- Muted Icon (Speaker with X) -->
+<symbol id="muted-icon" viewBox="0 0 24 24"><path d="M4,9v6h4l5,4.5V4.5L8,9H4Z"/><path d="M15.1,9.6l1.4-1.4,1.9,1.9,1.9-1.9,1.4,1.4-1.9,1.9,1.9,1.9-1.4,1.4-1.9-1.9-1.9,1.9-1.4-1.4,1.9-1.9-1.9-1.9Z"/></symbol>
       `;
     this.shadow.appendChild(svgDefs);
     const style = document.createElement("style");
@@ -1076,6 +1279,16 @@ class BespokenAudioPlayer extends HTMLElement {
         }
         .prev-next-container.hidden {
             display: none;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: var(--volume-controls-gap, var(--audio-controls-gap, var(--controls-gap, 5px)));
+        }
+
+        .volume-container input[type="range"] {
+            width: var(--volume-slider-width, 60px);
         }
 
         .controls-progress-time-container button {
@@ -1237,7 +1450,11 @@ class BespokenAudioPlayer extends HTMLElement {
   get tracks() {
     return this.playlistData;
   }
-}
+};
+// Whether the browser honors programmatic audio.volume changes
+// (iOS lets only the hardware buttons control volume)
+__publicField(_BespokenAudioPlayer, "volumeAdjustable", null);
+let BespokenAudioPlayer = _BespokenAudioPlayer;
 const DEFAULT_COMPONENT_NAME = "bespoken-audio-player";
 function initBespokenAudioPlayer(componentName = DEFAULT_COMPONENT_NAME) {
   if (customElements.get(componentName)) {

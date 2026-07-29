@@ -191,6 +191,12 @@ There are many options which you can read about in the [Styling and Customizatio
   <bespoken-audio-player tracks='[...]' only-current-track-visible></bespoken-audio-player>
   ```
 
+- **`volume-control`**: *(optional)* If present, a mute button and volume slider are displayed. On devices where programmatic volume has no effect (iOS reserves volume for the hardware buttons), only the mute button is shown.
+
+  ```html
+  <bespoken-audio-player tracks='[...]' volume-control></bespoken-audio-player>
+  ```
+
 ---
 
 ## Properties
@@ -207,6 +213,10 @@ There are many options which you can read about in the [Styling and Customizatio
 - **`currentTrackIndex`**: *(read-only)* The index of the currently playing track.
 
 - **`isPlaying`**: *(read-only)* A boolean indicating whether the audio is currently playing.
+
+- **`volume`**: The playback volume, between 0 and 1. Can be read and set programmatically, even when the `volume-control` UI is not enabled.
+
+- **`muted`**: A boolean for the muted state. Can be read and set programmatically, even when the `volume-control` UI is not enabled.
 
 ---
 
@@ -239,6 +249,10 @@ Playlists are zero-based indexes. That means the first track index is 0, and the
   - mediaError: The original MediaError object.
   - trackIndex: The index of the track that caused the error.
   - track: The track object ({ src, title }) that caused the error.
+- **`volumeChange: VolumeChangeEvent`**: Fired when the volume or muted state changes.
+  - `event.detail`: { volume, muted }
+  - volume: The current volume between 0 and 1.
+  - muted: Whether the audio is muted.
 
 ```javascript
 # JavaScript example
@@ -269,6 +283,8 @@ player?.addEventListener('play', (e: TrackPlayEvent) => {
 - **`pause-icon`**: Slot for providing a custom pause icon.
 - **`prev-icon`**: Slot for providing a custom previous track icon.
 - **`next-icon`**: Slot for providing a custom next track icon.
+- **`volume-icon`**: Slot for providing a custom volume (unmuted) icon on the mute button.
+- **`muted-icon`**: Slot for providing a custom muted icon on the mute button.
 
 ---
 
@@ -296,6 +312,9 @@ Style specific parts of the component using the `::part` pseudo-element:
 - **`progress-bar`**: The progress bar (range input).
 - **`time-display`**: The time display element.
 - **`playback-rate-select`**: The playback speed drop-down menu.
+- **`volume-container`**: The wrapper around the mute button and volume slider (only present with the `volume-control` attribute).
+- **`mute-toggle-button`**: The mute/unmute button.
+- **`volume-slider`**: The volume slider (range input).
 
 ---
 

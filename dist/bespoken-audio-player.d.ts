@@ -6,6 +6,7 @@ declare module "bespoken-audio-player" {
             'ended': TrackEndedEvent;
             'error': TrackErrorEvent;
             'trackChange': TrackChangeEvent;
+            'volumeChange': VolumeChangeEvent;
         }
     }
     interface Track {
@@ -17,6 +18,7 @@ declare module "bespoken-audio-player" {
     export type TrackEndedEvent = CustomEvent<TrackEndedEventDetail>;
     export type TrackErrorEvent = CustomEvent<TrackErrorEventDetail>;
     export type TrackChangeEvent = CustomEvent<TrackChangeEventDetail>;
+    export type VolumeChangeEvent = CustomEvent<VolumeChangeEventDetail>;
     interface TrackErrorEventDetail {
         code: number;
         message: string;
@@ -42,6 +44,10 @@ declare module "bespoken-audio-player" {
         currentTrackIndex: number;
         prevTrackIndex: number;
     }
+    interface VolumeChangeEventDetail {
+        volume: number;
+        muted: boolean;
+    }
     export class BespokenAudioPlayer extends HTMLElement {
         private shadow;
         private playerContainer;
@@ -52,6 +58,10 @@ declare module "bespoken-audio-player" {
         private nextButton;
         private prevButton;
         private playbackRateSelect;
+        private muteButton;
+        private volumeSlider;
+        private volumeContainer;
+        private static volumeAdjustable;
         private controlsProgressTimeContainer;
         private progressBar;
         private timeDisplay;
@@ -171,6 +181,57 @@ declare module "bespoken-audio-player" {
          * Adjusts the playback rate based on the select control
          */
         private adjustPlaybackRate;
+        /**
+         * Detects whether the browser honors programmatic audio.volume changes.
+         * iOS reserves volume for the hardware buttons. The volume property can
+         * appear settable there (it accepts and reports a value without changing
+         * the output volume), so a read-back probe is not sufficient and the
+         * platform has to be detected instead. iPadOS 13+ masquerades as macOS,
+         * but real Macs report no touch points.
+         */
+        private static supportsVolumeAdjustment;
+        /**
+         * Creates the mute button and volume slider when the volume-control
+         * attribute is present. The slider is omitted on devices where
+         * programmatic volume has no effect (see supportsVolumeAdjustment).
+         * @param controlsContainer The controls group to append to
+         */
+        private createVolumeControl;
+        /**
+         * Sets the audio volume and keeps the volume UI in sync.
+         * Moving the slider above zero also unmutes.
+         * @param volume A value between 0 and 1
+         */
+        private setVolume;
+        /**
+         * Toggles the muted state of the audio
+         */
+        private toggleMute;
+        /**
+         * Updates the mute button icon/labels and slider position
+         * to match the audio element's state
+         */
+        private updateVolumeControlUI;
+        /**
+         * Adds or removes the volume UI when the volume-control attribute changes
+         */
+        private updateVolumeControlVisibility;
+        /**
+         * Dispatches the volumeChange custom event
+         */
+        private dispatchVolumeChangeEvent;
+        /**
+         * Gets or sets the playback volume (0 to 1). Works even when the
+         * volume-control UI is not enabled.
+         */
+        get volume(): number;
+        set volume(value: number);
+        /**
+         * Gets or sets the muted state. Works even when the
+         * volume-control UI is not enabled.
+         */
+        get muted(): boolean;
+        set muted(value: boolean);
         /**
          * Loads the current track based on currentTrackIndex
          */

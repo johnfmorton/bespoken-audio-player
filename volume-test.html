@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iOS Volume Behavior Test</title>
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0 auto; max-width: 640px; padding: 16px; }
+        h1 { font-size: 1.3rem; }
+        section { border: 1px solid #ccc; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+        button { font-size: 1rem; padding: 10px 16px; border-radius: 6px; border: 1px solid #888; background: #f4f4f5; }
+        .result { font-weight: bold; padding: 8px; border-radius: 6px; margin-top: 8px; }
+        .pass { background: #dcfce7; }
+        .fail { background: #fee2e2; }
+        .info { background: #e0e7ff; font-family: monospace; font-size: 0.8rem; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h1>iOS Volume Behavior Test</h1>
+    <p>Open this page on the device you want to test (e.g. <code>http://&lt;your-mac-ip&gt;:8888/volume-test.html</code> while <code>npm run dev</code> is running).</p>
+
+    <section>
+        <h2>0. Environment</h2>
+        <div id="env" class="result info"></div>
+    </section>
+
+    <section>
+        <h2>1. Does audio.volume read back after setting?</h2>
+        <p>Sets <code>audio.volume = 0.5</code> on a detached element and reads it back. Note: modern iOS may accept and report the value even though it has no effect on actual output, so treat test 2 (the audible test) as the ground truth.</p>
+        <button id="readback-test">Run read-back test</button>
+        <div id="readback-result" class="result"></div>
+    </section>
+
+    <section>
+        <h2>2. Does volume audibly change?</h2>
+        <p>Plays 3 seconds at full volume, then 3 seconds at <code>volume = 0.1</code>. If both sound equally loud, programmatic volume has no effect on this device.</p>
+        <button id="audible-test">Run audible test</button>
+        <div id="audible-result" class="result"></div>
+        <audio id="test-audio" src="track-1.mp3" preload="auto"></audio>
+    </section>
+
+    <section>
+        <h2>3. Does muted work?</h2>
+        <p>Plays 3 seconds unmuted, then 3 seconds with <code>muted = true</code>. Silence in the second half means muting works.</p>
+        <button id="muted-test">Run muted test</button>
+        <div id="muted-result" class="result"></div>
+    </section>
+
+    <section>
+        <h2>4. The component itself</h2>
+        <p>This player has the <code>volume-control</code> attribute. On devices where the read-back test fails, only the mute button should appear (no slider).</p>
+        <bespoken-audio-player volume-control tracks='[{"src": "track-1.mp3", "title": "Test Track"}]'></bespoken-audio-player>
+    </section>
+
+    <script type="module">
+        import { initBespokenAudioPlayer } from '/lib/bespoken-audio-player.ts';
+        initBespokenAudioPlayer();
+
+        const el = (id) => document.getElementById(id);
+
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+            (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+        el('env').textContent = `UA: ${navigator.userAgent} | maxTouchPoints: ${navigator.maxTouchPoints} | detected as iOS-family: ${isIOS} | component will show the volume slider: ${!isIOS}`;
+
+        el('readback-test').addEventListener('click', () => {
+            const probe = document.createElement('audio');
+            probe.volume = 0.5;
+            const supported = probe.volume === 0.5;
+            const r = el('readback-result');
+            r.textContent = supported
+                ? `Read back ${probe.volume} — programmatic volume appears SUPPORTED`
+                : `Read back ${probe.volume} — programmatic volume NOT supported (iOS behavior)`;
+            r.className = 'result ' + (supported ? 'pass' : 'fail');
+        });
+
+        const audio = el('test-audio');
+
+        function timedPlay(setup, resultEl, doneMessage) {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 1;
+            audio.muted = false;
+            resultEl.className = 'result info';
+            resultEl.textContent = 'Playing at full volume…';
+            audio.play();
+            setTimeout(() => {
+                setup();
+                setTimeout(() => {
+                    audio.pause();
+                    audio.muted = false;
+                    audio.volume = 1;
+                    resultEl.textContent = doneMessage;
+                }, 3000);
+            }, 3000);
+        }
+
+        el('audible-test').addEventListener('click', () => {
+            timedPlay(
+                () => {
+                    audio.volume = 0.1;
+                    el('audible-result').textContent = `Now volume = 0.1 (element reports ${audio.volume})… quieter?`;
+                },
+                el('audible-result'),
+                'Done. If the second half was NOT quieter, volume control has no effect on this device.'
+            );
+        });
+
+        el('muted-test').addEventListener('click', () => {
+            timedPlay(
+                () => {
+                    audio.muted = true;
+                    el('muted-result').textContent = `Now muted = ${audio.muted}… silent?`;
+                },
+                el('muted-result'),
+                'Done. If the second half was silent, muting works on this device.'
+            );
+        });
+    </script>
+</body>
+</html>

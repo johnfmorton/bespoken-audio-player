@@ -186,6 +186,23 @@
                               {"src": "track-3.mp3", "title": "Track Three"}]'></bespoken-audio-player>
       </div>
 
+      <h2>Adding a volume control</h2>
+
+      <p>Add the <code>volume-control</code> attribute to display a mute button and a volume slider. On devices
+        where the browser does not allow the volume to be set programmatically, like iPhones and iPads where
+        volume is reserved for the hardware buttons, the slider is not shown and only the mute button appears.</p>
+
+      <pre class="text-xs whitespace-pre text-yellow-300">
+&lt;bespoken-audio-player
+      <span class="text-blue-200">volume-control</span>
+      tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"}]'
+>&lt;/bespoken-audio-player></pre>
+
+      <div>
+        <bespoken-audio-player volume-control
+                               tracks='[{"src": "track-1.mp3", "title": "Track One: Introducing the Bespoken Audio Player"}]'></bespoken-audio-player>
+      </div>
+
       <h2>Using <code>slots</code> to change the buttons and looping content.</h2>
 
       <p>There are <code>slots</code> for the control buttons, <code>play-icon</code>, <code>pause-icon</code>, <code>prev-icon</code>,

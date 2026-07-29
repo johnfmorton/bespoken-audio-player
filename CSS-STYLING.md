@@ -102,6 +102,38 @@ The `<bespoken-audio-player>` web component uses the `::part()` pseudo-class to 
    }
    ```
 
+7. **`volume-container`**
+   The `volume-container` part is the wrapper around the mute button and volume slider. It only exists when the `volume-control` attribute is present on the player. Use it to style or hide the whole volume UI with one rule.
+
+   **Example:**
+   ```css
+   bespoken-audio-player::part(volume-container) {
+       gap: 8px;
+   }
+   ```
+
+8. **`mute-toggle-button`**
+   The `mute-toggle-button` part refers to the button that toggles the muted state. It swaps between the volume and muted icons depending on the audio state.
+
+   **Example:**
+   ```css
+   bespoken-audio-player::part(mute-toggle-button) {
+       background-color: #673ab7;
+       color: #fff;
+       border-radius: 4px;
+   }
+   ```
+
+9. **`volume-slider`**
+   The `volume-slider` part refers to the volume range input. Note: the slider is not rendered on devices where programmatic volume changes have no effect (such as iOS).
+
+   **Example:**
+   ```css
+   bespoken-audio-player::part(volume-slider) {
+       width: 100px;
+   }
+   ```
+
 ## Example Usage
 
 Below is an example of how you can style the parts of the audio player:
@@ -288,7 +320,17 @@ Below is a list of all available CSS variables with descriptions of what they co
 - `--select-font-size`: Font size for the select element text.
   **Example**: `0.65rem`
 
-### 7. Gap and Spacing Controls
+### 7. Volume Control Styling
+
+These apply when the `volume-control` attribute is present on the player.
+
+- `--volume-slider-width`: Width of the volume slider.
+  **Example**: `100px`
+
+- `--volume-controls-gap`: Gap between the mute button and the volume slider.
+  **Example**: `8px`
+
+### 8. Gap and Spacing Controls
 
 - `--controls-gap`: The gap between the control elements (buttons, progress bar, etc.).
   **Example**: `5px`
@@ -299,7 +341,7 @@ Below is a list of all available CSS variables with descriptions of what they co
 - `--prev-next-controls-gap`: Gap between the "previous" and "next" buttons.
   **Example**: `0px`
 
-### 8. Time Display Styling
+### 9. Time Display Styling
 
 - `--time-display-background`: Background color for the time display.
   **Example**: `antiquewhite`
