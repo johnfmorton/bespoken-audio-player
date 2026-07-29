@@ -245,6 +245,7 @@ Style specific parts of the component using the `::part` pseudo-element:
 - **`prev-button`**: The previous track button.
 - **`progress-bar`**: The progress bar (range input).
 - **`time-display`**: The time display element.
+- **`playback-rate-select`**: The playback speed drop-down menu.
 
 ---
 

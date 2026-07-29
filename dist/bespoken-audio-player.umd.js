@@ -4,7 +4,7 @@
  * description: This is a web component that makes embedding audio on a website easier.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2026-06-06T18:53:56.863Z 
+ * build date: 2026-07-29T10:57:05.854Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
@@ -304,6 +304,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       controlsContainer.appendChild(this.prevNextContainer);
       this.playbackRateSelect = document.createElement("select");
       this.playbackRateSelect.setAttribute("aria-label", "Playback Speed");
+      this.playbackRateSelect.setAttribute("part", "playback-rate-select");
       const playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
       playbackRates.forEach((rate) => {
         var _a2;
