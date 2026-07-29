@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2026-07-29
 
 - Added an opt-in volume control via the new `volume-control` attribute: a mute button (with `volume-icon`/`muted-icon` slots) and a volume slider. On devices where programmatic volume has no effect (iOS reserves volume for the hardware buttons), only the mute button is shown. New parts: `volume-container`, `mute-toggle-button`, `volume-slider`. New CSS variables: `--volume-slider-width`, `--volume-controls-gap`. New `volumeChange` event and `volume`/`muted` JavaScript properties. ([#8](https://github.com/johnfmorton/bespoken-audio-player/issues/8))
 

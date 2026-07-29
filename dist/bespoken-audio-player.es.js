@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.1.0
+ * version: v1.2.0
  * description: This is a web component that makes embedding audio on a website easier.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2026-07-29T11:38:59.285Z 
+ * build date: 2026-07-29T11:47:17.264Z 
  */
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;

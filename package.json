@@ -1,6 +1,6 @@
 {
     "name": "bespoken-audio-player",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "This is a web component that makes embedding audio on a website easier.",
     "files": [
         "dist"

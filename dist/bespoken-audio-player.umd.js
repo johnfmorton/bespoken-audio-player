@@ -1,10 +1,10 @@
 /**
  * name: bespoken-audio-player
- * version: v1.1.0
+ * version: v1.2.0
  * description: This is a web component that makes embedding audio on a website easier.
  * author: John F. Morton <john@johnfmorton.com> (https://supergeekery.com)
  * repository: https://github.com/johnfmorton/bespoken-audio-player
- * build date: 2026-07-29T11:38:59.285Z 
+ * build date: 2026-07-29T11:47:17.264Z 
  */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["bespoken-audio-player"] = {}));
