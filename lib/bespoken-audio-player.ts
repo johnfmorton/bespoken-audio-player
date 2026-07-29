@@ -444,6 +444,7 @@ export class BespokenAudioPlayer extends HTMLElement {
         // Playback rate select dropdown
         this.playbackRateSelect = document.createElement('select');
         this.playbackRateSelect.setAttribute('aria-label', 'Playback Speed');
+        this.playbackRateSelect.setAttribute('part', 'playback-rate-select');
         // Define available playback rates
         const playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 2.0];
         playbackRates.forEach((rate) => {

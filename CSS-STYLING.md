@@ -85,6 +85,23 @@ The `<bespoken-audio-player>` web component uses the `::part()` pseudo-class to 
    }
    ```
 
+6. **`playback-rate-select`**
+   The `playback-rate-select` part refers to the drop-down menu that lets users change the playback speed of the audio (0.5x–2x). You can restyle it — or hide it entirely if you don't want to offer speed control.
+
+   **Example:**
+   ```css
+   bespoken-audio-player::part(playback-rate-select) {
+       background-color: #673ab7;
+       color: #fff;
+       border-radius: 4px;
+   }
+
+   /* Or hide the speed control altogether */
+   bespoken-audio-player::part(playback-rate-select) {
+       display: none;
+   }
+   ```
+
 ## Example Usage
 
 Below is an example of how you can style the parts of the audio player:
@@ -123,6 +140,12 @@ bespoken-audio-player#custom-player::part(next-button) {
     color: #fff;
     padding: 5px;
     border-radius: 50%;
+}
+
+bespoken-audio-player#custom-player::part(playback-rate-select) {
+    background-color: #e0e0e0;
+    color: #333;
+    border-radius: 3px;
 }
 ```
 
